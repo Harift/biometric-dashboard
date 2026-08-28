@@ -55,7 +55,7 @@ HTML_TEMPLATE = """
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 20px;
+      gap: 30px;
       width: 95%;
       max-width: 1100px;
       margin: 20px auto;
@@ -68,7 +68,7 @@ HTML_TEMPLATE = """
       border: 1px solid var(--accent-color);
       border-radius: 20px;
       flex: 1;
-      max-width: 700px;
+      max-width: 650px;
       padding: 32px;
       backdrop-filter: blur(14px);
       display: flex;
@@ -78,43 +78,44 @@ HTML_TEMPLATE = """
       box-shadow: 0 10px 35px rgba(0,0,0,0.85);
     }
 
-    /* KURISU VISUAL NOVEL SPRITE LAYER */
-    .sprite-wrapper {
+    /* KURISU SVG AVATAR STYLES */
+    .avatar-wrapper {
       position: relative;
       display: flex;
+      flex-direction: column;
       justify-content: center;
-      align-items: flex-end;
-      height: 580px;
-      width: 320px;
-      pointer-events: none;
+      align-items: center;
+      width: 340px;
+      height: 520px;
     }
 
-    .kurisu-sprite {
+    .kurisu-svg {
+      width: 100%;
       height: 100%;
-      width: auto;
-      object-fit: contain;
-      filter: drop-shadow(0 0 15px var(--glow-color));
-      transition: filter 0.8s ease, transform 0.3s ease;
+      filter: drop-shadow(0 0 20px var(--accent-color));
+      transition: filter 0.5s ease, transform 0.3s ease;
     }
 
-    /* Ambient Sprite Animations */
-    .sprite-sleeping { transform: translateY(10px); opacity: 0.85; }
-    .sprite-vibe { animation: gentleFloat 3s infinite ease-in-out; }
-    .sprite-pumped { animation: eagerBounce 0.6s infinite ease-in-out; }
-    .sprite-concerned { animation: worryTremor 0.25s infinite ease-in-out; }
+    .avatar-dialog-box {
+      position: absolute;
+      top: 10px;
+      background: rgba(9, 13, 22, 0.9);
+      border: 1px solid var(--accent-color);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #ffffff;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      pointer-events: none;
+      transition: all 0.3s ease;
+      max-width: 260px;
+    }
 
-    @keyframes gentleFloat {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-8px); }
-    }
-    @keyframes eagerBounce {
-      0%, 100% { transform: translateY(0px) scale(1); }
-      50% { transform: translateY(-10px) scale(1.02); }
-    }
-    @keyframes worryTremor {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-3px); }
-      75% { transform: translateX(3px); }
+    /* Expression transitions */
+    .eye, .mouth, .brow, .blush, .sweat {
+      transition: all 0.3s ease;
     }
 
     .header-bar {
@@ -254,11 +255,6 @@ HTML_TEMPLATE = """
       cursor: not-allowed !important;
       border: none !important;
     }
-
-    @media (max-width: 900px) {
-      .main-container { flex-direction: column; }
-      .sprite-wrapper { height: 350px; width: 100%; }
-    }
   </style>
 </head>
 <body>
@@ -326,9 +322,89 @@ HTML_TEMPLATE = """
 
   </div>
 
-  <!-- MAKISE KURISU VISUAL NOVEL SPRITE DISPLAY -->
-  <div class="sprite-wrapper">
-    <img id="kurisu-img" class="kurisu-sprite sprite-vibe" src="https://static.wikia.nocookie.net/steins-gate/images/5/5c/Makise_Kurisu_Sprite_Neutral.png" alt="Makise Kurisu Sprite" />
+  <!-- PURE SVG MAKISE KURISU AVATAR WITH DYNAMIC EXPRESSIONS -->
+  <div class="avatar-wrapper">
+    <div class="avatar-dialog-box" id="kurisu-dialog">"Waiting for pulse data... Don't keep me waiting."</div>
+
+    <svg class="kurisu-svg" viewBox="0 0 300 450" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="hairGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#b03a1b" />
+          <stop offset="100%" stop-color="#5a1807" />
+        </linearGradient>
+        <linearGradient id="tieGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#ff1a1a" />
+          <stop offset="100%" stop-color="#800000" />
+        </linearGradient>
+        <linearGradient id="eyeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#a855f7" />
+          <stop offset="100%" stop-color="#3b0764" />
+        </linearGradient>
+      </defs>
+
+      <!-- Back Hair (Long Chestnut-Red) -->
+      <path d="M 60 140 Q 30 250 50 420 Q 150 440 250 420 Q 270 250 240 140 Z" fill="url(#hairGrad)" />
+
+      <!-- White Lab Coat / Jacket Backing -->
+      <path d="M 70 280 L 30 450 L 270 450 L 230 280 Z" fill="#cfab7a" />
+      <path d="M 90 290 L 50 450 L 250 450 L 210 290 Z" fill="#e2e8f0" />
+
+      <!-- Neck & High Collar -->
+      <path d="M 130 220 L 170 220 L 175 270 L 125 270 Z" fill="#fce7f3" />
+      <path d="M 132 245 L 168 245 L 170 268 L 130 268 Z" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5" />
+
+      <!-- Iconic Red Tie -->
+      <polygon points="144,260 156,260 160,370 150,390 140,370" fill="url(#tieGrad)" />
+      <polygon points="142,255 158,255 155,270 145,270" fill="#cc0000" />
+
+      <!-- Open Khaki Jacket Straps & Lapels -->
+      <path d="M 85 285 L 130 350 L 115 450 L 45 450 Z" fill="#b48a56" />
+      <path d="M 215 285 L 170 350 L 185 450 L 255 450 Z" fill="#b48a56" />
+
+      <!-- Face Base -->
+      <path d="M 100 130 Q 150 240 200 130 Q 200 90 100 90 Z" fill="#fff1f2" />
+
+      <!-- Dynamic Blush -->
+      <g id="blush-group" opacity="0">
+        <ellipse cx="120" cy="180" rx="14" ry="6" fill="#f43f5e" opacity="0.4" />
+        <ellipse cx="180" cy="180" rx="14" ry="6" fill="#f43f5e" opacity="0.4" />
+      </g>
+
+      <!-- Dynamic Sweat Drop (Stressed / Extreme BPM) -->
+      <path id="sweat-drop" class="sweat" d="M 205 135 Q 210 145 205 150 Q 200 145 205 135 Z" fill="#38bdf8" opacity="0" />
+
+      <!-- Purple Eyes (Kurisu's Sharp Violet Eyes) -->
+      <g id="left-eye" class="eye">
+        <ellipse cx="125" cy="165" rx="12" ry="16" fill="url(#eyeGrad)" />
+        <ellipse cx="125" cy="165" rx="10" ry="13" fill="#000000" />
+        <circle cx="122" cy="158" r="4" fill="#ffffff" />
+        <path d="M 110 148 Q 125 142 140 150" stroke="#1e293b" stroke-width="3.5" fill="none" stroke-linecap="round" />
+      </g>
+
+      <g id="right-eye" class="eye">
+        <ellipse cx="175" cy="165" rx="12" ry="16" fill="url(#eyeGrad)" />
+        <ellipse cx="175" cy="165" rx="10" ry="13" fill="#000000" />
+        <circle cx="172" cy="158" r="4" fill="#ffffff" />
+        <path d="M 160 150 Q 175 142 190 148" stroke="#1e293b" stroke-width="3.5" fill="none" stroke-linecap="round" />
+      </g>
+
+      <!-- Eyebrows (Tsundere Sharp / Expressive) -->
+      <path id="left-brow" class="brow" d="M 110 142 Q 125 136 142 144" stroke="#5a1807" stroke-width="3" fill="none" stroke-linecap="round" />
+      <path id="right-brow" class="brow" d="M 158 144 Q 175 136 190 142" stroke="#5a1807" stroke-width="3" fill="none" stroke-linecap="round" />
+
+      <!-- Nose -->
+      <path d="M 150 174 L 148 182 L 152 182" stroke="#fda4af" stroke-width="1.5" fill="none" />
+
+      <!-- Dynamic Mouth -->
+      <path id="mouth-path" class="mouth" d="M 140 198 Q 150 200 160 198" stroke="#be123c" stroke-width="2.5" fill="none" stroke-linecap="round" />
+
+      <!-- Front Bangs & Side Hair Framing Face -->
+      <path d="M 95 130 Q 125 170 130 110 Q 150 180 155 105 Q 170 175 205 130 Q 190 60 110 65 Z" fill="url(#hairGrad)" />
+      <!-- Left side strand -->
+      <path d="M 95 120 Q 80 200 90 310 Q 105 310 102 200 Z" fill="url(#hairGrad)" />
+      <!-- Right side strand -->
+      <path d="M 205 120 Q 220 200 210 310 Q 195 310 198 200 Z" fill="url(#hairGrad)" />
+    </svg>
   </div>
 
 </div>
@@ -443,9 +519,47 @@ HTML_TEMPLATE = """
     }
   }
 
-  function setSpriteAnimation(animationClass) {
-    const img = document.getElementById('kurisu-img');
-    img.className = "kurisu-sprite " + animationClass;
+  /* KURISU EXPRESSION CONTROLLER */
+  function setKurisuExpression(emotion) {
+    const dialog = document.getElementById('kurisu-dialog');
+    const mouth = document.getElementById('mouth-path');
+    const leftBrow = document.getElementById('left-brow');
+    const rightBrow = document.getElementById('right-brow');
+    const blush = document.getElementById('blush-group');
+    const sweat = document.getElementById('sweat-drop');
+
+    if (emotion === "waiting") {
+      dialog.innerText = '"Waiting for pulse data... Don\'t keep me waiting."';
+      mouth.setAttribute("d", "M 142 198 Q 150 197 158 198"); // Slight neutral line
+      leftBrow.setAttribute("d", "M 110 142 Q 125 136 142 144");
+      rightBrow.setAttribute("d", "M 158 144 Q 175 136 190 142");
+      blush.setAttribute("opacity", "0");
+      sweat.setAttribute("opacity", "0");
+    } 
+    else if (emotion === "calm") {
+      dialog.innerText = '"Heart rate is perfectly stable. Good job keeping composure."';
+      mouth.setAttribute("d", "M 140 195 Q 150 205 160 195"); // Soft smile
+      leftBrow.setAttribute("d", "M 110 140 Q 125 135 142 140");
+      rightBrow.setAttribute("d", "M 158 140 Q 175 135 190 140");
+      blush.setAttribute("opacity", "0.2");
+      sweat.setAttribute("opacity", "0");
+    }
+    else if (emotion === "excited") {
+      dialog.innerText = '"B-Baka! Your pulse is spiking fast! Don\'t overdo it!"';
+      mouth.setAttribute("d", "M 140 195 Q 150 185 160 195"); // Open surprised mouth
+      leftBrow.setAttribute("d", "M 110 135 Q 125 142 142 138"); // Sharp tsundere brow
+      rightBrow.setAttribute("d", "M 158 138 Q 175 142 190 135");
+      blush.setAttribute("opacity", "0.8"); // High Tsundere Blush
+      sweat.setAttribute("opacity", "0");
+    }
+    else if (emotion === "concerned") {
+      dialog.innerText = '"Hey! Your heart rate is dangerously high! Take a breath!"';
+      mouth.setAttribute("d", "M 142 202 Q 150 192 158 202"); // Worried frown
+      leftBrow.setAttribute("d", "M 110 145 Q 125 138 142 148");
+      rightBrow.setAttribute("d", "M 158 148 Q 175 138 190 145");
+      blush.setAttribute("opacity", "0");
+      sweat.setAttribute("opacity", "1"); // Sweat drop visible
+    }
   }
 
   function updateAnalysis() {
@@ -459,7 +573,7 @@ HTML_TEMPLATE = """
 
     if (!bpm || bpm <= 0) {
       applyDynamicTheme("#030712", "#090d16", "#030712", "#38bdf8", "rgba(56, 189, 248, 0.15)", "#64748b");
-      setSpriteAnimation("sprite-sleeping");
+      setKurisuExpression("waiting");
       moodEl.innerText = "Waiting for Data...";
       genreEl.innerText = "Waiting for Selection...";
       recBtn.disabled = true;
@@ -475,24 +589,20 @@ HTML_TEMPLATE = """
 
     if (bpm < 55) {
       applyDynamicTheme("#140924", "#1b0c30", "#0e061a", "#c084fc", "rgba(192, 132, 252, 0.45)", "#e9d5ff");
-      setSpriteAnimation("sprite-concerned");
+      setKurisuExpression("concerned");
       moodEl.innerText = "Critically Low BPM (< 55)";
       genreEl.innerText = "Seek Medical Attention";
-    } else if (bpm >= 55 && bpm <= 66) {
-      applyDynamicTheme("#051329", "#081d3d", "#030e21", "#38bdf8", "rgba(56, 189, 248, 0.4)", "#93c5fd");
-      setSpriteAnimation("sprite-vibe");
-      moodEl.innerText = "Relaxed / Peaceful (55-66 BPM)";
-    } else if (bpm >= 67 && bpm <= 82) {
+    } else if (bpm >= 55 && bpm <= 82) {
       applyDynamicTheme("#031c14", "#062b1f", "#02120d", "#22c55e", "rgba(34, 197, 94, 0.4)", "#86efac");
-      setSpriteAnimation("sprite-vibe");
+      setKurisuExpression("calm");
       moodEl.innerText = "Calm Baseline / Normal Vibe";
     } else if (bpm >= 83 && bpm <= 170) {
       applyDynamicTheme("#240909", "#360e0e", "#190505", "#f97316", "rgba(249, 115, 22, 0.45)", "#fdba74");
-      setSpriteAnimation("sprite-pumped");
+      setKurisuExpression("excited");
       moodEl.innerText = "High Energy / Excited / Stressed";
-    } else if (bpm > 170) {
+    } else {
       applyDynamicTheme("#330505", "#4a0808", "#240303", "#ef4444", "rgba(239, 68, 68, 0.5)", "#fca5a5");
-      setSpriteAnimation("sprite-concerned");
+      setKurisuExpression("concerned");
       moodEl.innerText = "BPM Too High (> 170 BPM)";
       genreEl.innerText = "Rest & Medical Caution";
       return;
@@ -500,13 +610,11 @@ HTML_TEMPLATE = """
 
     let genreText = "";
     if (targetMode === "maintain") {
-      if (bpm >= 55 && bpm <= 66) genreText = `${lang} Chill, Relaxing & Love Songs`;
-      else if (bpm >= 67 && bpm <= 82) genreText = `${lang} Normal Vibe & Folk Hits`;
-      else if (bpm >= 83 && bpm <= 170) genreText = `${lang} Gym Pump-up OR Breakup/Soup`;
+      if (bpm >= 55 && bpm <= 82) genreText = `${lang} Chill & Soft Hits`;
+      else genreText = `${lang} Gym Pump-up OR Soup Songs`;
     } else {
-      if (bpm >= 55 && bpm <= 66) genreText = `${lang} Motivational Gym Pump-up`;
-      else if (bpm >= 67 && bpm <= 82) genreText = `${lang} Chill & Romantic Songs`;
-      else if (bpm >= 83 && bpm <= 170) genreText = `${lang} Soothing Deep Relaxation`;
+      if (bpm >= 55 && bpm <= 82) genreText = `${lang} Energetic Workout Tracks`;
+      else genreText = `${lang} Deep Relaxation Melodies`;
     }
 
     genreEl.innerText = genreText;
@@ -519,13 +627,11 @@ HTML_TEMPLATE = """
 
     let query = `${lang} mood relaxation music`;
     if (targetMode === "maintain") {
-      if (bpm >= 55 && bpm <= 66) query = `${lang} chill relaxing love romantic songs`;
-      else if (bpm >= 67 && bpm <= 82) query = `${lang} normal vibe folk upbeat hits`;
-      else if (bpm >= 83 && bpm <= 170) query = `${lang} motivational gym pump up songs`;
+      if (bpm >= 55 && bpm <= 82) query = `${lang} chill relaxing love romantic songs`;
+      else query = `${lang} motivational gym pump up songs`;
     } else {
-      if (bpm >= 55 && bpm <= 66) query = `${lang} motivational gym pump up workout songs`;
-      else if (bpm >= 67 && bpm <= 82) query = `${lang} chill relaxing love romantic songs`;
-      else if (bpm >= 83 && bpm <= 170) query = `${lang} deep relaxation calm soothing melodies`;
+      if (bpm >= 55 && bpm <= 82) query = `${lang} motivational gym pump up workout songs`;
+      else query = `${lang} deep relaxation calm soothing melodies`;
     }
 
     window.open(`https://music.youtube.com/search?q=${encodeURIComponent(query)}`, '_blank');
