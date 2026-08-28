@@ -55,9 +55,9 @@ HTML_TEMPLATE = """
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 30px;
+      gap: 25px;
       width: 95%;
-      max-width: 1100px;
+      max-width: 1150px;
       margin: 20px auto;
     }
 
@@ -67,39 +67,38 @@ HTML_TEMPLATE = """
       background: var(--card-bg);
       border: 1px solid var(--accent-color);
       border-radius: 20px;
-      flex: 1;
+      flex: 1.2;
       max-width: 650px;
-      padding: 32px;
+      padding: 28px;
       backdrop-filter: blur(14px);
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 16px;
       transition: all 0.8s ease;
       box-shadow: 0 10px 35px rgba(0,0,0,0.85);
     }
 
-    /* KURISU SVG AVATAR STYLES */
+    /* KURISU CANVAS CONTAINER */
     .avatar-wrapper {
       position: relative;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      width: 340px;
+      width: 360px;
       height: 520px;
     }
 
-    .kurisu-svg {
-      width: 100%;
-      height: 100%;
-      filter: drop-shadow(0 0 20px var(--accent-color));
-      transition: filter 0.5s ease, transform 0.3s ease;
+    #kurisuCanvas {
+      width: 340px;
+      height: 440px;
+      border-radius: 16px;
+      filter: drop-shadow(0 0 15px var(--accent-color));
+      transition: filter 0.8s ease;
     }
 
     .avatar-dialog-box {
-      position: absolute;
-      top: 10px;
-      background: rgba(9, 13, 22, 0.9);
+      background: rgba(9, 13, 22, 0.95);
       border: 1px solid var(--accent-color);
       border-radius: 12px;
       padding: 10px 14px;
@@ -108,14 +107,13 @@ HTML_TEMPLATE = """
       color: #ffffff;
       text-align: center;
       box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-      pointer-events: none;
-      transition: all 0.3s ease;
-      max-width: 260px;
-    }
-
-    /* Expression transitions */
-    .eye, .mouth, .brow, .blush, .sweat {
-      transition: all 0.3s ease;
+      margin-bottom: 10px;
+      width: 90%;
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.5s ease;
     }
 
     .header-bar {
@@ -123,9 +121,9 @@ HTML_TEMPLATE = """
       justify-content: space-between;
       align-items: center;
       background: var(--container-bg);
-      padding: 14px 20px;
+      padding: 12px 18px;
       border-radius: 12px;
-      font-size: 14px;
+      font-size: 13px;
       border: 1px solid rgba(255, 255, 255, 0.08);
       transition: all 0.8s ease;
     }
@@ -142,23 +140,38 @@ HTML_TEMPLATE = """
     .bpm-container {
       text-align: center;
       background: var(--container-bg);
-      padding: 24px;
+      padding: 18px;
       border-radius: 16px;
       border: 1px solid rgba(255, 255, 255, 0.08);
       transition: all 0.8s ease;
     }
 
     .bpm-value {
-      font-size: 56px;
+      font-size: 48px;
       font-weight: bold;
       color: var(--accent-color);
-      margin: 4px 0;
+      margin: 2px 0;
       transition: color 0.5s ease;
     }
 
     .bpm-waiting {
-      font-size: 24px;
+      font-size: 20px;
       color: var(--text-muted);
+    }
+
+    .manual-bpm-box {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .manual-bpm-box input {
+      width: 140px;
+      text-align: center;
+      font-size: 16px;
+      padding: 8px 12px;
     }
 
     .info-panel {
@@ -166,7 +179,7 @@ HTML_TEMPLATE = """
       grid-template-columns: 1fr 1fr;
       gap: 12px;
       background: var(--container-bg);
-      padding: 16px;
+      padding: 14px;
       border-radius: 12px;
       border: 1px solid rgba(255, 255, 255, 0.08);
       transition: all 0.8s ease;
@@ -186,44 +199,44 @@ HTML_TEMPLATE = """
     }
 
     .info-value {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: bold;
       color: var(--accent-color);
       transition: color 0.5s ease;
     }
 
-    canvas {
+    #ecgCanvas {
       background: rgba(0, 0, 0, 0.6);
       border-radius: 8px;
       width: 100%;
-      height: 60px;
-      margin-top: 8px;
+      height: 50px;
+      margin-top: 6px;
     }
 
     .controls-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      gap: 14px;
     }
 
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
 
     label {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--text-muted);
       font-weight: 700;
       letter-spacing: 1px;
     }
 
     select, input, button {
-      padding: 12px 14px;
+      padding: 10px 12px;
       border-radius: 10px;
       border: 1px solid rgba(255, 255, 255, 0.15);
-      font-size: 14px;
+      font-size: 13px;
       font-weight: bold;
       transition: all 0.5s ease;
     }
@@ -238,9 +251,9 @@ HTML_TEMPLATE = """
       grid-column: span 2;
       background: var(--accent-color);
       color: #000000;
-      font-size: 16px;
+      font-size: 15px;
       cursor: pointer;
-      margin-top: 6px;
+      margin-top: 4px;
       border: none;
       transition: all 0.3s ease;
     }
@@ -267,23 +280,28 @@ HTML_TEMPLATE = """
     <div class="header-bar">
       <span>ESP32 SENSOR: <span id="esp-status-badge" class="status-badge status-offline">WAITING FOR ESP32</span></span>
       <div>
-        <span style="color: var(--text-muted); margin-right: 8px;">INPUT MODE:</span>
+        <span style="color: var(--text-muted); margin-right: 6px;">MODE:</span>
         <select class="mode-select-header" id="input-mode-select" onchange="toggleInputMode()">
-          <option value="esp32" selected>ESP32 Hardware Stream</option>
-          <option value="manual">Manual BPM Input</option>
+          <option value="esp32">ESP32 Hardware Stream</option>
+          <option value="manual" selected>Manual BPM Input</option>
         </select>
       </div>
     </div>
 
     <div class="bpm-container">
-      <div style="font-size: 12px; color: var(--text-muted); font-weight: bold; letter-spacing: 1.5px;">BIOMETRIC STREAM</div>
-      <div class="bpm-value" id="bpm-val"><span class="bpm-waiting">Touch ESP32 Sensor...</span></div>
+      <div style="font-size: 11px; color: var(--text-muted); font-weight: bold; letter-spacing: 1.5px;">BIOMETRIC STREAM</div>
       
-      <div id="manual-input-container" style="display: none; margin-top: 10px;">
-        <input type="number" id="manual-bpm-field" placeholder="Enter BPM (e.g. 75)" min="30" max="250" oninput="updateAnalysis()" style="width: 200px; text-align: center;">
+      <div class="bpm-value" id="bpm-val-esp" style="display: none;">
+        <span class="bpm-waiting">Touch ESP32 Sensor...</span>
+      </div>
+      
+      <!-- PERMANENT MANUAL INPUT UI -->
+      <div class="manual-bpm-box" id="manual-input-container">
+        <label for="manual-bpm-field">ENTER BPM:</label>
+        <input type="number" id="manual-bpm-field" placeholder="e.g. 75" min="30" max="250" oninput="updateAnalysis()" value="75">
       </div>
 
-      <canvas id="ecgCanvas" width="600" height="60"></canvas>
+      <canvas id="ecgCanvas" width="600" height="50"></canvas>
     </div>
 
     <div class="info-panel">
@@ -317,94 +335,15 @@ HTML_TEMPLATE = """
         </select>
       </div>
 
-      <button id="rec-btn" class="btn-submit btn-disabled" onclick="handleRecommendationClick()" disabled>Waiting for Valid Input...</button>
+      <button id="rec-btn" class="btn-submit" onclick="handleRecommendationClick()">Open YouTube Music Recommendation →</button>
     </div>
 
   </div>
 
-  <!-- PURE SVG MAKISE KURISU AVATAR WITH DYNAMIC EXPRESSIONS -->
+  <!-- KURISU CANVAS AVATAR -->
   <div class="avatar-wrapper">
-    <div class="avatar-dialog-box" id="kurisu-dialog">"Waiting for pulse data... Don't keep me waiting."</div>
-
-    <svg class="kurisu-svg" viewBox="0 0 300 450" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="hairGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#b03a1b" />
-          <stop offset="100%" stop-color="#5a1807" />
-        </linearGradient>
-        <linearGradient id="tieGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#ff1a1a" />
-          <stop offset="100%" stop-color="#800000" />
-        </linearGradient>
-        <linearGradient id="eyeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#a855f7" />
-          <stop offset="100%" stop-color="#3b0764" />
-        </linearGradient>
-      </defs>
-
-      <!-- Back Hair (Long Chestnut-Red) -->
-      <path d="M 60 140 Q 30 250 50 420 Q 150 440 250 420 Q 270 250 240 140 Z" fill="url(#hairGrad)" />
-
-      <!-- White Lab Coat / Jacket Backing -->
-      <path d="M 70 280 L 30 450 L 270 450 L 230 280 Z" fill="#cfab7a" />
-      <path d="M 90 290 L 50 450 L 250 450 L 210 290 Z" fill="#e2e8f0" />
-
-      <!-- Neck & High Collar -->
-      <path d="M 130 220 L 170 220 L 175 270 L 125 270 Z" fill="#fce7f3" />
-      <path d="M 132 245 L 168 245 L 170 268 L 130 268 Z" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5" />
-
-      <!-- Iconic Red Tie -->
-      <polygon points="144,260 156,260 160,370 150,390 140,370" fill="url(#tieGrad)" />
-      <polygon points="142,255 158,255 155,270 145,270" fill="#cc0000" />
-
-      <!-- Open Khaki Jacket Straps & Lapels -->
-      <path d="M 85 285 L 130 350 L 115 450 L 45 450 Z" fill="#b48a56" />
-      <path d="M 215 285 L 170 350 L 185 450 L 255 450 Z" fill="#b48a56" />
-
-      <!-- Face Base -->
-      <path d="M 100 130 Q 150 240 200 130 Q 200 90 100 90 Z" fill="#fff1f2" />
-
-      <!-- Dynamic Blush -->
-      <g id="blush-group" opacity="0">
-        <ellipse cx="120" cy="180" rx="14" ry="6" fill="#f43f5e" opacity="0.4" />
-        <ellipse cx="180" cy="180" rx="14" ry="6" fill="#f43f5e" opacity="0.4" />
-      </g>
-
-      <!-- Dynamic Sweat Drop (Stressed / Extreme BPM) -->
-      <path id="sweat-drop" class="sweat" d="M 205 135 Q 210 145 205 150 Q 200 145 205 135 Z" fill="#38bdf8" opacity="0" />
-
-      <!-- Purple Eyes (Kurisu's Sharp Violet Eyes) -->
-      <g id="left-eye" class="eye">
-        <ellipse cx="125" cy="165" rx="12" ry="16" fill="url(#eyeGrad)" />
-        <ellipse cx="125" cy="165" rx="10" ry="13" fill="#000000" />
-        <circle cx="122" cy="158" r="4" fill="#ffffff" />
-        <path d="M 110 148 Q 125 142 140 150" stroke="#1e293b" stroke-width="3.5" fill="none" stroke-linecap="round" />
-      </g>
-
-      <g id="right-eye" class="eye">
-        <ellipse cx="175" cy="165" rx="12" ry="16" fill="url(#eyeGrad)" />
-        <ellipse cx="175" cy="165" rx="10" ry="13" fill="#000000" />
-        <circle cx="172" cy="158" r="4" fill="#ffffff" />
-        <path d="M 160 150 Q 175 142 190 148" stroke="#1e293b" stroke-width="3.5" fill="none" stroke-linecap="round" />
-      </g>
-
-      <!-- Eyebrows (Tsundere Sharp / Expressive) -->
-      <path id="left-brow" class="brow" d="M 110 142 Q 125 136 142 144" stroke="#5a1807" stroke-width="3" fill="none" stroke-linecap="round" />
-      <path id="right-brow" class="brow" d="M 158 144 Q 175 136 190 142" stroke="#5a1807" stroke-width="3" fill="none" stroke-linecap="round" />
-
-      <!-- Nose -->
-      <path d="M 150 174 L 148 182 L 152 182" stroke="#fda4af" stroke-width="1.5" fill="none" />
-
-      <!-- Dynamic Mouth -->
-      <path id="mouth-path" class="mouth" d="M 140 198 Q 150 200 160 198" stroke="#be123c" stroke-width="2.5" fill="none" stroke-linecap="round" />
-
-      <!-- Front Bangs & Side Hair Framing Face -->
-      <path d="M 95 130 Q 125 170 130 110 Q 150 180 155 105 Q 170 175 205 130 Q 190 60 110 65 Z" fill="url(#hairGrad)" />
-      <!-- Left side strand -->
-      <path d="M 95 120 Q 80 200 90 310 Q 105 310 102 200 Z" fill="url(#hairGrad)" />
-      <!-- Right side strand -->
-      <path d="M 205 120 Q 220 200 210 310 Q 195 310 198 200 Z" fill="url(#hairGrad)" />
-    </svg>
+    <div class="avatar-dialog-box" id="kurisu-dialog">"Enter your pulse or touch the sensor..."</div>
+    <canvas id="kurisuCanvas" width="340" height="440"></canvas>
   </div>
 
 </div>
@@ -412,9 +351,11 @@ HTML_TEMPLATE = """
 <script>
   let isHardwareConnected = false;
   let espBpmValue = 0;
-  let activeInputMode = "esp32";
-  let activeWaveColor = '#334155';
+  let activeInputMode = "manual";
+  let activeWaveColor = '#38bdf8';
+  let currentEmotion = "neutral";
 
+  // ECG Graph Logic
   const canvas = document.getElementById('ecgCanvas');
   const ctx = canvas.getContext('2d');
   let x = 0;
@@ -434,7 +375,7 @@ HTML_TEMPLATE = """
     
     let y = canvas.height / 2;
     if (activeState && x % 60 > 25 && x % 60 < 35) {
-      y += (Math.random() - 0.5) * 40;
+      y += (Math.random() - 0.5) * 35;
     }
     
     ctx.lineTo(x, y);
@@ -446,14 +387,14 @@ HTML_TEMPLATE = """
   function toggleInputMode() {
     activeInputMode = document.getElementById('input-mode-select').value;
     const manualContainer = document.getElementById('manual-input-container');
-    const bpmValDisplay = document.getElementById('bpm-val');
+    const espBpmDisplay = document.getElementById('bpm-val-esp');
 
     if (activeInputMode === 'manual') {
-      manualContainer.style.display = 'block';
-      bpmValDisplay.style.display = 'none';
+      manualContainer.style.display = 'flex';
+      espBpmDisplay.style.display = 'none';
     } else {
       manualContainer.style.display = 'none';
-      bpmValDisplay.style.display = 'block';
+      espBpmDisplay.style.display = 'block';
     }
     updateAnalysis();
   }
@@ -471,7 +412,7 @@ HTML_TEMPLATE = """
       const data = await res.json();
       
       const badge = document.getElementById('esp-status-badge');
-      const bpmContainer = document.getElementById('bpm-val');
+      const espBpmDisplay = document.getElementById('bpm-val-esp');
 
       if (data && data.connected && data.bpm > 0) {
         isHardwareConnected = true;
@@ -481,7 +422,7 @@ HTML_TEMPLATE = """
         badge.innerText = 'LIVE [GPIO 13]';
 
         if (activeInputMode === 'esp32') {
-          bpmContainer.innerHTML = `${data.bpm} <span style="font-size: 24px;">BPM</span>`;
+          espBpmDisplay.innerHTML = `${data.bpm} <span style="font-size: 20px;">BPM</span>`;
         }
       } else {
         isHardwareConnected = false;
@@ -491,7 +432,7 @@ HTML_TEMPLATE = """
         badge.innerText = 'WAITING FOR ESP32';
 
         if (activeInputMode === 'esp32') {
-          bpmContainer.innerHTML = `<span class="bpm-waiting">Touch ESP32 Sensor...</span>`;
+          espBpmDisplay.innerHTML = `<span class="bpm-waiting">Touch ESP32 Sensor...</span>`;
         }
       }
       updateAnalysis();
@@ -501,6 +442,218 @@ HTML_TEMPLATE = """
   }
 
   setInterval(pollESP32BPM, 1000);
+
+  // KURISU HIGH-DETAIL CANVAS DRAWING ENGINE
+  const kCanvas = document.getElementById('kurisuCanvas');
+  const kCtx = kCanvas.getContext('2d');
+  let frameCount = 0;
+
+  function drawKurisu() {
+    frameCount++;
+    const w = kCanvas.width;
+    const h = kCanvas.height;
+
+    kCtx.clearRect(0, 0, w, h);
+
+    // Subtle breath offset
+    const breathY = Math.sin(frameCount * 0.05) * 2;
+
+    // 1. Back Long Hair (Chestnut Red-Brown)
+    const hairGrad = kCtx.createLinearGradient(0, 50, 0, 400);
+    hairGrad.addColorStop(0, '#9e3319');
+    hairGrad.addColorStop(0.5, '#6e1d09');
+    hairGrad.addColorStop(1, '#3b0d03');
+
+    kCtx.fillStyle = hairGrad;
+    kCtx.beginPath();
+    kCtx.moveTo(70, 120 + breathY);
+    kCtx.bezierCurveTo(20, 220, 20, 360, 45, 440);
+    kCtx.lineTo(295, 440);
+    kCtx.bezierCurveTo(320, 360, 320, 220, 270, 120 + breathY);
+    kCtx.fill();
+
+    // 2. White Dress Shirt & Outer Coat
+    kCtx.fillStyle = '#1e293b'; // inner dark skirt base
+    kCtx.fillRect(110, 360 + breathY, 120, 80);
+
+    kCtx.fillStyle = '#ffffff'; // White shirt
+    kCtx.beginPath();
+    kCtx.moveTo(125, 230 + breathY);
+    kCtx.lineTo(215, 230 + breathY);
+    kCtx.lineTo(230, 440);
+    kCtx.lineTo(110, 440);
+    kCtx.fill();
+
+    // Khaki Coat (Folded around arms)
+    kCtx.fillStyle = '#a88151';
+    kCtx.beginPath();
+    kCtx.moveTo(60, 260 + breathY);
+    kCtx.lineTo(120, 250 + breathY);
+    kCtx.lineTo(110, 440);
+    kCtx.lineTo(30, 440);
+    kCtx.fill();
+
+    kCtx.beginPath();
+    kCtx.moveTo(280, 260 + breathY);
+    kCtx.lineTo(220, 250 + breathY);
+    kCtx.lineTo(230, 440);
+    kCtx.lineTo(310, 440);
+    kCtx.fill();
+
+    // Red Tie
+    const tieGrad = kCtx.createLinearGradient(0, 240, 0, 380);
+    tieGrad.addColorStop(0, '#ef4444');
+    tieGrad.addColorStop(1, '#7f1d1d');
+    kCtx.fillStyle = tieGrad;
+    kCtx.beginPath();
+    kCtx.moveTo(164, 240 + breathY);
+    kCtx.lineTo(176, 240 + breathY);
+    kCtx.lineTo(182, 350 + breathY);
+    kCtx.lineTo(170, 370 + breathY);
+    kCtx.lineTo(158, 350 + breathY);
+    kCtx.fill();
+
+    // Neck
+    kCtx.fillStyle = '#fbeee6';
+    kCtx.fillRect(150, 190 + breathY, 40, 50);
+
+    // 3. Face
+    kCtx.beginPath();
+    kCtx.moveTo(110, 110 + breathY);
+    kCtx.bezierCurveTo(110, 210, 230, 210, 230, 110 + breathY);
+    kCtx.bezierCurveTo(230, 70, 110, 70, 110, 110 + breathY);
+    kCtx.fillStyle = '#fff4ee';
+    kCtx.fill();
+
+    // Blush
+    if (currentEmotion === 'tsundere' || currentEmotion === 'calm') {
+      kCtx.fillStyle = 'rgba(244, 63, 94, 0.35)';
+      kCtx.beginPath();
+      kCtx.ellipse(135, 158 + breathY, 12, 6, 0, 0, Math.PI * 2);
+      kCtx.ellipse(205, 158 + breathY, 12, 6, 0, 0, Math.PI * 2);
+      kCtx.fill();
+    }
+
+    // 4. Eyes (Kurisu Deep Violet Iris)
+    const drawEye = (cx, cy) => {
+      // White base
+      kCtx.fillStyle = '#ffffff';
+      kCtx.beginPath();
+      kCtx.ellipse(cx, cy, 14, 18, 0, 0, Math.PI * 2);
+      kCtx.fill();
+
+      // Violet Iris
+      const eyeGrad = kCtx.createLinearGradient(0, cy - 15, 0, cy + 15);
+      eyeGrad.addColorStop(0, '#c084fc');
+      eyeGrad.addColorStop(0.5, '#7e22ce');
+      eyeGrad.addColorStop(1, '#3b0764');
+      kCtx.fillStyle = eyeGrad;
+      kCtx.beginPath();
+      kCtx.ellipse(cx, cy, 11, 15, 0, 0, Math.PI * 2);
+      kCtx.fill();
+
+      // Pupil
+      kCtx.fillStyle = '#1e1b4b';
+      kCtx.beginPath();
+      kCtx.arc(cx, cy, 5, 0, Math.PI * 2);
+      kCtx.fill();
+
+      // Highlight catchlight
+      kCtx.fillStyle = '#ffffff';
+      kCtx.beginPath();
+      kCtx.arc(cx - 4, cy - 6, 3.5, 0, Math.PI * 2);
+      kCtx.fill();
+    };
+
+    drawEye(140, 145 + breathY);
+    drawEye(200, 145 + breathY);
+
+    // Eyeliner / Eyelashes
+    kCtx.strokeStyle = '#27272a';
+    kCtx.lineWidth = 3;
+    kCtx.beginPath();
+    kCtx.moveTo(122, 134 + breathY);
+    kCtx.quadraticCurveTo(140, 126 + breathY, 156, 136 + breathY);
+    kCtx.moveTo(184, 136 + breathY);
+    kCtx.quadraticCurveTo(200, 126 + breathY, 218, 134 + breathY);
+    kCtx.stroke();
+
+    // 5. Eyebrows (Dynamic Emotion)
+    kCtx.strokeStyle = '#5a1807';
+    kCtx.lineWidth = 3;
+    kCtx.beginPath();
+
+    if (currentEmotion === 'tsundere') {
+      // Slanted inward sharp eyebrows
+      kCtx.moveTo(124, 122 + breathY);
+      kCtx.lineTo(154, 130 + breathY);
+      kCtx.moveTo(186, 130 + breathY);
+      kCtx.lineTo(216, 122 + breathY);
+    } else if (currentEmotion === 'concerned') {
+      // Worried raised brows
+      kCtx.moveTo(124, 128 + breathY);
+      kCtx.lineTo(154, 120 + breathY);
+      kCtx.moveTo(186, 120 + breathY);
+      kCtx.lineTo(216, 128 + breathY);
+    } else {
+      // Soft neutral brows
+      kCtx.moveTo(124, 124 + breathY);
+      kCtx.quadraticCurveTo(140, 118 + breathY, 154, 124 + breathY);
+      kCtx.moveTo(186, 124 + breathY);
+      kCtx.quadraticCurveTo(200, 118 + breathY, 216, 124 + breathY);
+    }
+    kCtx.stroke();
+
+    // 6. Mouth
+    kCtx.strokeStyle = '#be123c';
+    kCtx.lineWidth = 2.5;
+    kCtx.beginPath();
+
+    if (currentEmotion === 'tsundere') {
+      // Pouting open curve
+      kCtx.arc(170, 178 + breathY, 6, 0.1 * Math.PI, 0.9 * Math.PI, false);
+    } else if (currentEmotion === 'calm') {
+      // Soft smirk
+      kCtx.moveTo(162, 175 + breathY);
+      kCtx.quadraticCurveTo(170, 182 + breathY, 178, 174 + breathY);
+    } else if (currentEmotion === 'concerned') {
+      // Small surprised 'o'
+      kCtx.arc(170, 178 + breathY, 5, 0, Math.PI * 2);
+    } else {
+      // Small neutral line
+      kCtx.moveTo(164, 176 + breathY);
+      kCtx.lineTo(176, 176 + breathY);
+    }
+    kCtx.stroke();
+
+    // 7. Front Bangs & Framing Hair Strands
+    kCtx.fillStyle = hairGrad;
+    kCtx.beginPath();
+    // Middle bangs
+    kCtx.moveTo(110, 90 + breathY);
+    kCtx.bezierCurveTo(140, 140, 145, 90, 155, 135);
+    kCtx.bezierCurveTo(165, 85, 185, 140, 230, 90 + breathY);
+    kCtx.bezierCurveTo(220, 50, 120, 50, 110, 90 + breathY);
+    kCtx.fill();
+
+    // Left long strand
+    kCtx.beginPath();
+    kCtx.moveTo(115, 100 + breathY);
+    kCtx.quadraticCurveTo(90, 180, 100, 290 + breathY);
+    kCtx.quadraticCurveTo(120, 200, 130, 120 + breathY);
+    kCtx.fill();
+
+    // Right long strand
+    kCtx.beginPath();
+    kCtx.moveTo(225, 100 + breathY);
+    kCtx.quadraticCurveTo(250, 180, 240, 290 + breathY);
+    kCtx.quadraticCurveTo(220, 200, 210, 120 + breathY);
+    kCtx.fill();
+
+    requestAnimationFrame(drawKurisu);
+  }
+
+  drawKurisu();
 
   function applyDynamicTheme(bgColor, cardBg, containerBg, accentColor, glowColor, textMuted) {
     const root = document.documentElement;
@@ -512,54 +665,11 @@ HTML_TEMPLATE = """
     root.style.setProperty('--text-muted', textMuted);
 
     activeWaveColor = accentColor;
-
-    const recBtn = document.getElementById('rec-btn');
-    if (!recBtn.disabled) {
-      recBtn.style.background = accentColor;
-    }
   }
 
-  /* KURISU EXPRESSION CONTROLLER */
-  function setKurisuExpression(emotion) {
-    const dialog = document.getElementById('kurisu-dialog');
-    const mouth = document.getElementById('mouth-path');
-    const leftBrow = document.getElementById('left-brow');
-    const rightBrow = document.getElementById('right-brow');
-    const blush = document.getElementById('blush-group');
-    const sweat = document.getElementById('sweat-drop');
-
-    if (emotion === "waiting") {
-      dialog.innerText = '"Waiting for pulse data... Don\'t keep me waiting."';
-      mouth.setAttribute("d", "M 142 198 Q 150 197 158 198"); // Slight neutral line
-      leftBrow.setAttribute("d", "M 110 142 Q 125 136 142 144");
-      rightBrow.setAttribute("d", "M 158 144 Q 175 136 190 142");
-      blush.setAttribute("opacity", "0");
-      sweat.setAttribute("opacity", "0");
-    } 
-    else if (emotion === "calm") {
-      dialog.innerText = '"Heart rate is perfectly stable. Good job keeping composure."';
-      mouth.setAttribute("d", "M 140 195 Q 150 205 160 195"); // Soft smile
-      leftBrow.setAttribute("d", "M 110 140 Q 125 135 142 140");
-      rightBrow.setAttribute("d", "M 158 140 Q 175 135 190 140");
-      blush.setAttribute("opacity", "0.2");
-      sweat.setAttribute("opacity", "0");
-    }
-    else if (emotion === "excited") {
-      dialog.innerText = '"B-Baka! Your pulse is spiking fast! Don\'t overdo it!"';
-      mouth.setAttribute("d", "M 140 195 Q 150 185 160 195"); // Open surprised mouth
-      leftBrow.setAttribute("d", "M 110 135 Q 125 142 142 138"); // Sharp tsundere brow
-      rightBrow.setAttribute("d", "M 158 138 Q 175 142 190 135");
-      blush.setAttribute("opacity", "0.8"); // High Tsundere Blush
-      sweat.setAttribute("opacity", "0");
-    }
-    else if (emotion === "concerned") {
-      dialog.innerText = '"Hey! Your heart rate is dangerously high! Take a breath!"';
-      mouth.setAttribute("d", "M 142 202 Q 150 192 158 202"); // Worried frown
-      leftBrow.setAttribute("d", "M 110 145 Q 125 138 142 148");
-      rightBrow.setAttribute("d", "M 158 148 Q 175 138 190 145");
-      blush.setAttribute("opacity", "0");
-      sweat.setAttribute("opacity", "1"); // Sweat drop visible
-    }
+  function setKurisuDialogue(emotion, text) {
+    currentEmotion = emotion;
+    document.getElementById('kurisu-dialog').innerText = text;
   }
 
   function updateAnalysis() {
@@ -569,40 +679,31 @@ HTML_TEMPLATE = """
     
     const moodEl = document.getElementById('detected-mood');
     const genreEl = document.getElementById('suggested-genre');
-    const recBtn = document.getElementById('rec-btn');
 
     if (!bpm || bpm <= 0) {
       applyDynamicTheme("#030712", "#090d16", "#030712", "#38bdf8", "rgba(56, 189, 248, 0.15)", "#64748b");
-      setKurisuExpression("waiting");
+      setKurisuDialogue("neutral", '"Waiting for pulse data... Don\'t keep me waiting."');
       moodEl.innerText = "Waiting for Data...";
       genreEl.innerText = "Waiting for Selection...";
-      recBtn.disabled = true;
-      recBtn.className = "btn-submit btn-disabled";
-      recBtn.innerText = "Waiting for Valid Input...";
-      activeWaveColor = '#334155';
       return;
     }
 
-    recBtn.disabled = false;
-    recBtn.className = "btn-submit";
-    recBtn.innerText = "Open YouTube Music Recommendation →";
-
     if (bpm < 55) {
       applyDynamicTheme("#140924", "#1b0c30", "#0e061a", "#c084fc", "rgba(192, 132, 252, 0.45)", "#e9d5ff");
-      setKurisuExpression("concerned");
+      setKurisuDialogue("concerned", '"Hey! Your heart rate is dangerously low! Are you okay?!"');
       moodEl.innerText = "Critically Low BPM (< 55)";
-      genreEl.innerText = "Seek Medical Attention";
+      genreEl.innerText = "Rest & Ambient Sounds";
     } else if (bpm >= 55 && bpm <= 82) {
       applyDynamicTheme("#031c14", "#062b1f", "#02120d", "#22c55e", "rgba(34, 197, 94, 0.4)", "#86efac");
-      setKurisuExpression("calm");
-      moodEl.innerText = "Calm Baseline / Normal Vibe";
+      setKurisuDialogue("calm", '"Pulse is steady. A relaxed state of mind suits you well."');
+      moodEl.innerText = "Calm Baseline / Peaceful Vibe";
     } else if (bpm >= 83 && bpm <= 170) {
       applyDynamicTheme("#240909", "#360e0e", "#190505", "#f97316", "rgba(249, 115, 22, 0.45)", "#fdba74");
-      setKurisuExpression("excited");
+      setKurisuDialogue("tsundere", '"B-Baka! Why is your heart beating so fast all of a sudden?!"');
       moodEl.innerText = "High Energy / Excited / Stressed";
     } else {
       applyDynamicTheme("#330505", "#4a0808", "#240303", "#ef4444", "rgba(239, 68, 68, 0.5)", "#fca5a5");
-      setKurisuExpression("concerned");
+      setKurisuDialogue("concerned", '"Warning: Extreme heart rate detected! Take a deep breath!"');
       moodEl.innerText = "BPM Too High (> 170 BPM)";
       genreEl.innerText = "Rest & Medical Caution";
       return;
@@ -611,7 +712,7 @@ HTML_TEMPLATE = """
     let genreText = "";
     if (targetMode === "maintain") {
       if (bpm >= 55 && bpm <= 82) genreText = `${lang} Chill & Soft Hits`;
-      else genreText = `${lang} Gym Pump-up OR Soup Songs`;
+      else genreText = `${lang} Motivational Workout Tracks`;
     } else {
       if (bpm >= 55 && bpm <= 82) genreText = `${lang} Energetic Workout Tracks`;
       else genreText = `${lang} Deep Relaxation Melodies`;
@@ -636,6 +737,9 @@ HTML_TEMPLATE = """
 
     window.open(`https://music.youtube.com/search?q=${encodeURIComponent(query)}`, '_blank');
   }
+
+  // Initial trigger on load
+  updateAnalysis();
 </script>
 
 </body>
