@@ -881,17 +881,20 @@
       activeCategory = "criticalHigh";
     }
 
+    // DO NOT OVERWRITE QUOTE/CATEGORY IF BREAKUP OVERRIDE IS ACTIVE
+    if (isBreakupOverride) {
+      genreEl.innerText = `${lang} Breakup & Soup Songs Playlist`;
+      return;
+    }
+
     if (!currentSelectedQuote || previousCategory !== activeCategory) {
-      isBreakupOverride = false;
       currentSelectedQuote = getRandomQuote(activeCategory);
     }
 
     quoteEl.innerText = currentSelectedQuote;
 
     let genreText = "";
-    if (isBreakupOverride) {
-      genreText = `${lang} Breakup & Soup Songs Playlist`;
-    } else if (bpm < 55) {
+    if (bpm < 55) {
       genreText = `Medical Advisory / Peaceful Deep Rest`;
     } else if (bpm >= 55 && bpm <= 66) {
       genreText = targetMode === "maintain" ? `${lang} Soft Acoustic & Lo-Fi Chill` : `${lang} Upbeat Pop Hits`;
@@ -917,6 +920,9 @@
 
     if (modalTimer) clearInterval(modalTimer);
 
+    // Reset Breakup override when modal is freshly opened
+    isBreakupOverride = false;
+    currentSelectedQuote = getRandomQuote(activeCategory);
     quoteText.innerText = currentSelectedQuote;
     modal.style.display = 'flex';
 
@@ -940,15 +946,17 @@
 
   function closeQuoteModal() {
     if (modalTimer) clearInterval(modalTimer);
+    isBreakupOverride = false;
     document.getElementById('quote-modal').style.display = 'none';
+    updateAnalysis();
   }
 
   function enableBreakupMode() {
     const proceedBtn = document.getElementById('modal-proceed-btn');
     const lang = document.getElementById('lang-select').value;
     
+    // Lock Breakup Override Mode
     isBreakupOverride = true;
-    activeCategory = "breakup";
     currentSelectedQuote = getRandomQuote("breakup");
 
     document.getElementById('modal-quote-text').innerText = currentSelectedQuote;
@@ -983,6 +991,7 @@
 
     let searchQuery = "";
 
+    // Strictly check if heartbreak mode was chosen
     if (isBreakupOverride) {
       searchQuery = languageBreakupMap[lang] || `${lang} heartbreak breakup soup songs playlist`;
     } else if (bpm < 55) {
