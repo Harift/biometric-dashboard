@@ -320,9 +320,9 @@
 
   </div>
 
-  <!-- KURISU CANVAS AVATAR -->
+  <!-- CYBER FEMALE AI CANVAS AVATAR -->
   <div class="avatar-wrapper">
-    <div class="avatar-dialog-box" id="kurisu-dialog">"Enter your pulse or touch the sensor..."</div>
+    <div class="avatar-dialog-box" id="kurisu-dialog">"Waiting for biometric pulse..."</div>
     <canvas id="kurisuCanvas" width="340" height="440"></canvas>
   </div>
 
@@ -420,7 +420,7 @@
     }
   }
 
-  // ENHANCED ANIME CURVED KURISU RENDERER
+  // FUTURISTIC FEMALE CYBER-AI RENDERER
   const kCanvas = document.getElementById('kurisuCanvas');
   const kCtx = kCanvas.getContext('2d');
   let frameCount = 0;
@@ -432,203 +432,127 @@
 
     kCtx.clearRect(0, 0, w, h);
 
-    const breathY = Math.sin(frameCount * 0.05) * 2;
+    const pulse = Math.sin(frameCount * 0.08) * 4;
     const headX = w / 2;
-    const headY = 120 + breathY;
+    const headY = 160 + Math.sin(frameCount * 0.04) * 3;
 
-    // 1. Long Back Hair (Curved & Flowing)
-    const hairGrad = kCtx.createLinearGradient(0, 40, 0, 400);
-    hairGrad.addColorStop(0, '#a23214');
-    hairGrad.addColorStop(0.6, '#751a05');
-    hairGrad.addColorStop(1, '#3b0d03');
-
-    kCtx.fillStyle = hairGrad;
+    // 1. Holographic Grid Background Ring
+    kCtx.strokeStyle = activeWaveColor;
+    kCtx.lineWidth = 1;
+    kCtx.globalAlpha = 0.2;
     kCtx.beginPath();
-    kCtx.moveTo(headX - 60, headY - 40);
-    kCtx.bezierCurveTo(headX - 140, headY + 50, headX - 130, 360, headX - 90, 440);
-    kCtx.lineTo(headX + 90, 440);
-    kCtx.bezierCurveTo(headX + 130, 360, headX + 140, headY + 50, headX + 60, headY - 40);
+    kCtx.arc(headX, headY, 130 + pulse, 0, Math.PI * 2);
+    kCtx.stroke();
+    kCtx.globalAlpha = 1.0;
+
+    // 2. Cyber Shoulders & Bust (Sleek Female Contour)
+    const bodyGrad = kCtx.createLinearGradient(0, headY + 50, 0, h);
+    bodyGrad.addColorStop(0, '#0f172a');
+    bodyGrad.addColorStop(1, '#020617');
+
+    kCtx.fillStyle = bodyGrad;
+    kCtx.strokeStyle = activeWaveColor;
+    kCtx.lineWidth = 2;
+
+    kCtx.beginPath();
+    kCtx.moveTo(headX - 100, h);
+    kCtx.quadraticCurveTo(headX - 85, headY + 120, headX - 45, headY + 80);
+    kCtx.lineTo(headX - 20, headY + 60);
+    kCtx.lineTo(headX + 20, headY + 60);
+    kCtx.lineTo(headX + 45, headY + 80);
+    kCtx.quadraticCurveTo(headX + 85, headY + 120, headX + 100, h);
     kCtx.closePath();
     kCtx.fill();
-
-    // 2. Curved Shoulders & Torso
-    kCtx.fillStyle = '#ffffff'; // White blouse
-    kCtx.beginPath();
-    kCtx.moveTo(headX - 45, 230 + breathY);
-    kCtx.quadraticCurveTo(headX, 220 + breathY, headX + 45, 230 + breathY);
-    kCtx.lineTo(headX + 55, 440);
-    kCtx.lineTo(headX - 55, 440);
-    kCtx.closePath();
-    kCtx.fill();
-
-    // Slanted Tie
-    const tieGrad = kCtx.createLinearGradient(0, 230, 0, 360);
-    tieGrad.addColorStop(0, '#dc2626');
-    tieGrad.addColorStop(1, '#881337');
-    kCtx.fillStyle = tieGrad;
-    kCtx.beginPath();
-    kCtx.moveTo(headX - 6, 230 + breathY);
-    kCtx.lineTo(headX + 6, 230 + breathY);
-    kCtx.lineTo(headX + 10, 320 + breathY);
-    kCtx.lineTo(headX, 345 + breathY);
-    kCtx.lineTo(headX - 10, 320 + breathY);
-    kCtx.closePath();
-    kCtx.fill();
-
-    // Curved Open Jacket Slips
-    kCtx.fillStyle = '#9a7346';
-    // Left Jacket Side
-    kCtx.beginPath();
-    kCtx.moveTo(headX - 45, 230 + breathY);
-    kCtx.quadraticCurveTo(headX - 90, 240 + breathY, headX - 100, 320 + breathY);
-    kCtx.quadraticCurveTo(headX - 85, 400 + breathY, headX - 40, 440);
-    kCtx.lineTo(headX - 120, 440);
-    kCtx.quadraticCurveTo(headX - 125, 280, headX - 60, 225 + breathY);
-    kCtx.closePath();
-    kCtx.fill();
-
-    // Right Jacket Side
-    kCtx.beginPath();
-    kCtx.moveTo(headX + 45, 230 + breathY);
-    kCtx.quadraticCurveTo(headX + 90, 240 + breathY, headX + 100, 320 + breathY);
-    kCtx.quadraticCurveTo(headX + 85, 400 + breathY, headX + 40, 440);
-    kCtx.lineTo(headX + 120, 440);
-    kCtx.quadraticCurveTo(headX + 125, 280, headX + 60, 225 + breathY);
-    kCtx.closePath();
-    kCtx.fill();
-
-    // 3. Neck & Soft Chin Shape
-    kCtx.fillStyle = '#ffeedd';
-    kCtx.beginPath();
-    kCtx.moveTo(headX - 15, headY + 30);
-    kCtx.lineTo(headX + 15, headY + 30);
-    kCtx.lineTo(headX + 18, 230 + breathY);
-    kCtx.lineTo(headX - 18, 230 + breathY);
-    kCtx.closePath();
-    kCtx.fill();
-
-    // Face (Tapered Anime Jawline)
-    kCtx.beginPath();
-    kCtx.moveTo(headX - 50, headY - 20);
-    kCtx.quadraticCurveTo(headX - 52, headY + 30, headX - 25, headY + 60);
-    kCtx.quadraticCurveTo(headX, headY + 75, headX + 25, headY + 60);
-    kCtx.quadraticCurveTo(headX + 52, headY + 30, headX + 50, headY - 20);
-    kCtx.quadraticCurveTo(headX, headY - 60, headX - 50, headY - 20);
-    kCtx.fillStyle = '#fff4eb';
-    kCtx.fill();
-
-    // Soft Blush
-    if (currentEmotion === 'tsundere' || currentEmotion === 'calm') {
-      kCtx.fillStyle = 'rgba(251, 113, 133, 0.35)';
-      kCtx.beginPath();
-      kCtx.ellipse(headX - 25, headY + 22, 10, 5, 0, 0, Math.PI * 2);
-      kCtx.ellipse(headX + 25, headY + 22, 10, 5, 0, 0, Math.PI * 2);
-      kCtx.fill();
-    }
-
-    // 4. Eyes (Large Anime Oval Eyes with Highlights)
-    const drawAnimeEye = (cx, cy) => {
-      kCtx.fillStyle = '#ffffff';
-      kCtx.beginPath();
-      kCtx.ellipse(cx, cy, 12, 16, 0, 0, Math.PI * 2);
-      kCtx.fill();
-
-      const eyeGrad = kCtx.createLinearGradient(0, cy - 15, 0, cy + 15);
-      eyeGrad.addColorStop(0, '#c084fc');
-      eyeGrad.addColorStop(0.5, '#7e22ce');
-      eyeGrad.addColorStop(1, '#2e1065');
-      kCtx.fillStyle = eyeGrad;
-      kCtx.beginPath();
-      kCtx.ellipse(cx, cy + 1, 9, 13, 0, 0, Math.PI * 2);
-      kCtx.fill();
-
-      kCtx.fillStyle = '#0f172a';
-      kCtx.beginPath();
-      kCtx.ellipse(cx, cy + 3, 4, 6, 0, 0, Math.PI * 2);
-      kCtx.fill();
-
-      kCtx.fillStyle = '#ffffff';
-      kCtx.beginPath();
-      kCtx.arc(cx - 3, cy - 5, 3.5, 0, Math.PI * 2);
-      kCtx.arc(cx + 3, cy + 4, 2, 0, Math.PI * 2);
-      kCtx.fill();
-    };
-
-    drawAnimeEye(headX - 22, headY + 5);
-    drawAnimeEye(headX + 22, headY + 5);
-
-    // Eyeliner & Lashes
-    kCtx.strokeStyle = '#1e1b4b';
-    kCtx.lineWidth = 3;
-    kCtx.beginPath();
-    kCtx.moveTo(headX - 37, headY - 5);
-    kCtx.quadraticCurveTo(headX - 22, headY - 14, headX - 8, headY - 4);
-    kCtx.moveTo(headX + 8, headY - 4);
-    kCtx.quadraticCurveTo(headX + 22, headY - 14, headX + 37, headY - 5);
     kCtx.stroke();
 
-    // Eyebrows
-    kCtx.strokeStyle = '#6c1a06';
+    // Chest Biometric Heartbeat Core (Frequency Pulse Visual)
+    kCtx.save();
+    kCtx.shadowColor = activeWaveColor;
+    kCtx.shadowBlur = 15;
+    kCtx.strokeStyle = activeWaveColor;
     kCtx.lineWidth = 2.5;
-    kCtx.beginPath();
 
-    if (currentEmotion === 'tsundere') {
-      kCtx.moveTo(headX - 35, headY - 15);
-      kCtx.lineTo(headX - 10, headY - 8);
-      kCtx.moveTo(headX + 10, headY - 8);
-      kCtx.lineTo(headX + 35, headY - 15);
-    } else if (currentEmotion === 'concerned') {
-      kCtx.moveTo(headX - 35, headY - 8);
-      kCtx.lineTo(headX - 10, headY - 16);
-      kCtx.moveTo(headX + 10, headY - 16);
-      kCtx.lineTo(headX + 35, headY - 8);
-    } else {
-      kCtx.moveTo(headX - 34, headY - 14);
-      kCtx.quadraticCurveTo(headX - 22, headY - 20, headX - 10, headY - 14);
-      kCtx.moveTo(headX + 10, headY - 14);
-      kCtx.quadraticCurveTo(headX + 22, headY - 20, headX + 34, headY - 14);
-    }
+    kCtx.beginPath();
+    kCtx.moveTo(headX - 40, headY + 120);
+    kCtx.lineTo(headX - 15, headY + 120);
+    kCtx.lineTo(headX - 5, headY + 105 + pulse);
+    kCtx.lineTo(headX + 5, headY + 135 - pulse);
+    kCtx.lineTo(headX + 15, headY + 120);
+    kCtx.lineTo(headX + 40, headY + 120);
+    kCtx.stroke();
+    kCtx.restore();
+
+    // 3. Slender Cyber Neck
+    kCtx.fillStyle = '#090d16';
+    kCtx.fillRect(headX - 16, headY + 20, 32, 50);
+    
+    kCtx.strokeStyle = activeWaveColor;
+    kCtx.lineWidth = 1.5;
+    kCtx.beginPath();
+    kCtx.moveTo(headX - 12, headY + 30);
+    kCtx.lineTo(headX - 12, headY + 60);
+    kCtx.moveTo(headX + 12, headY + 30);
+    kCtx.lineTo(headX + 12, headY + 60);
     kCtx.stroke();
 
-    // Small Mouth
-    kCtx.strokeStyle = '#e11d48';
+    // 4. Female Cyber Face Base (Refined Jawline)
+    kCtx.fillStyle = '#090d16';
+    kCtx.beginPath();
+    kCtx.moveTo(headX - 45, headY - 40);
+    kCtx.quadraticCurveTo(headX - 45, headY + 20, headX - 18, headY + 50);
+    kCtx.quadraticCurveTo(headX, headY + 62, headX + 18, headY + 50);
+    kCtx.quadraticCurveTo(headX + 45, headY + 20, headX + 45, headY - 40);
+    kCtx.quadraticCurveTo(headX, headY - 80, headX - 45, headY - 40);
+    kCtx.fill();
+    kCtx.stroke();
+
+    // Head Visor / Biometric Scanner Band
+    kCtx.save();
+    kCtx.shadowColor = activeWaveColor;
+    kCtx.shadowBlur = 20;
+    kCtx.fillStyle = activeWaveColor;
+    
+    kCtx.beginPath();
+    kCtx.moveTo(headX - 44, headY - 12);
+    kCtx.quadraticCurveTo(headX, headY - 2, headX + 44, headY - 12);
+    kCtx.lineTo(headX + 40, headY + 8);
+    kCtx.quadraticCurveTo(headX, headY + 18, headX - 40, headY + 8);
+    kCtx.closePath();
+    kCtx.fill();
+    kCtx.restore();
+
+    // Cyber Eye Glint
+    kCtx.fillStyle = '#ffffff';
+    kCtx.beginPath();
+    kCtx.arc(headX - 18 + (pulse * 0.5), headY - 2, 3, 0, Math.PI * 2);
+    kCtx.arc(headX + 18 + (pulse * 0.5), headY - 2, 3, 0, Math.PI * 2);
+    kCtx.fill();
+
+    // Lips Line (Minimalist Cyber Aesthetic)
+    kCtx.strokeStyle = activeWaveColor;
     kCtx.lineWidth = 2;
     kCtx.beginPath();
-    if (currentEmotion === 'tsundere') {
-      kCtx.arc(headX, headY + 38, 5, 0.1 * Math.PI, 0.9 * Math.PI, false);
-    } else if (currentEmotion === 'calm') {
-      kCtx.moveTo(headX - 8, headY + 36);
-      kCtx.quadraticCurveTo(headX, headY + 41, headX + 8, headY + 36);
-    } else {
-      kCtx.moveTo(headX - 6, headY + 38);
-      kCtx.lineTo(headX + 6, headY + 38);
-    }
+    kCtx.moveTo(headX - 8, headY + 35);
+    kCtx.lineTo(headX + 8, headY + 35);
     kCtx.stroke();
 
-    // 5. Dynamic Curved Bangs & Side Locks
-    kCtx.fillStyle = hairGrad;
-
-    // Center Bangs Split
+    // 5. Crown Hair Geometry / Cyber Antennas
+    kCtx.strokeStyle = activeWaveColor;
+    kCtx.lineWidth = 2;
+    
+    // Left Crest
     kCtx.beginPath();
-    kCtx.moveTo(headX, headY - 25);
-    kCtx.quadraticCurveTo(headX - 20, headY - 5, headX - 30, headY + 15);
-    kCtx.quadraticCurveTo(headX - 12, headY - 10, headX, headY - 40);
-    kCtx.quadraticCurveTo(headX + 12, headY - 10, headX + 30, headY + 15);
-    kCtx.quadraticCurveTo(headX + 20, headY - 5, headX, headY - 25);
-    kCtx.fill();
+    kCtx.moveTo(headX - 30, headY - 60);
+    kCtx.lineTo(headX - 60, headY - 90);
+    kCtx.lineTo(headX - 40, headY - 30);
+    kCtx.stroke();
 
-    // Long Side Locks
+    // Right Crest
     kCtx.beginPath();
-    kCtx.moveTo(headX - 45, headY - 25);
-    kCtx.bezierCurveTo(headX - 65, headY + 40, headX - 55, headY + 100, headX - 35, headY + 150);
-    kCtx.bezierCurveTo(headX - 50, headY + 90, headX - 45, headY + 20, headX - 35, headY - 30);
-    kCtx.fill();
-
-    kCtx.beginPath();
-    kCtx.moveTo(headX + 45, headY - 25);
-    kCtx.bezierCurveTo(headX + 65, headY + 40, headX + 55, headY + 100, headX + 35, headY + 150);
-    kCtx.bezierCurveTo(headX + 50, headY + 90, headX + 45, headY + 20, headX + 35, headY - 30);
-    kCtx.fill();
+    kCtx.moveTo(headX + 30, headY - 60);
+    kCtx.lineTo(headX + 60, headY - 90);
+    kCtx.lineTo(headX + 40, headY - 30);
+    kCtx.stroke();
 
     requestAnimationFrame(drawKurisu);
   }
@@ -660,7 +584,7 @@
 
     if (!bpm || bpm <= 0) {
       applyDynamicTheme("#030712", "#090d16", "#030712", "#38bdf8", "rgba(56, 189, 248, 0.15)", "#64748b");
-      setKurisuDialogue("neutral", '"Waiting for pulse data... Don\'t keep me waiting."');
+      setKurisuDialogue("neutral", '"Awaiting biometric stream synchronization..."');
       moodEl.innerText = "Waiting for Data...";
       genreEl.innerText = "Waiting for Selection...";
       return;
@@ -668,20 +592,20 @@
 
     if (bpm < 55) {
       applyDynamicTheme("#140924", "#1b0c30", "#0e061a", "#c084fc", "rgba(192, 132, 252, 0.45)", "#e9d5ff");
-      setKurisuDialogue("concerned", '"Hey! Your heart rate is dangerously low! Are you okay?!"');
+      setKurisuDialogue("concerned", '"Low pulse anomaly detected. Recommending ambient recovery audio."');
       moodEl.innerText = "Critically Low BPM (< 55)";
       genreEl.innerText = "Rest & Ambient Sounds";
     } else if (bpm >= 55 && bpm <= 82) {
       applyDynamicTheme("#031c14", "#062b1f", "#02120d", "#22c55e", "rgba(34, 197, 94, 0.4)", "#86efac");
-      setKurisuDialogue("calm", '"Pulse is steady. A relaxed state of mind suits you well."');
+      setKurisuDialogue("calm", '"Optimal biometric rhythm achieved. Core state stabilized."');
       moodEl.innerText = "Calm Baseline / Peaceful Vibe";
     } else if (bpm >= 83 && bpm <= 170) {
       applyDynamicTheme("#240909", "#360e0e", "#190505", "#f97316", "rgba(249, 115, 22, 0.45)", "#fdba74");
-      setKurisuDialogue("tsundere", '"B-Baka! Why is your heart beating so fast all of a sudden?!"');
+      setKurisuDialogue("tsundere", '"Elevated heart rate registered! Adjusting frequency output."');
       moodEl.innerText = "High Energy / Excited / Stressed";
     } else {
       applyDynamicTheme("#330505", "#4a0808", "#240303", "#ef4444", "rgba(239, 68, 68, 0.5)", "#fca5a5");
-      setKurisuDialogue("concerned", '"Warning: Extreme heart rate detected! Take a deep breath!"');
+      setKurisuDialogue("concerned", '"Warning: Extreme BPM overload! Initiate immediate relaxation sequence."');
       moodEl.innerText = "BPM Too High (> 170 BPM)";
       genreEl.innerText = "Rest & Medical Caution";
       return;
