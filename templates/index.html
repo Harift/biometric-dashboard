@@ -881,7 +881,6 @@
       activeCategory = "criticalHigh";
     }
 
-    // DO NOT OVERWRITE QUOTE/CATEGORY IF BREAKUP OVERRIDE IS ACTIVE
     if (isBreakupOverride) {
       genreEl.innerText = `${lang} Breakup & Soup Songs Playlist`;
       return;
@@ -897,11 +896,11 @@
     if (bpm < 55) {
       genreText = `Medical Advisory / Peaceful Deep Rest`;
     } else if (bpm >= 55 && bpm <= 66) {
-      genreText = targetMode === "maintain" ? `${lang} Soft Acoustic & Lo-Fi Chill` : `${lang} Upbeat Pop Hits`;
+      genreText = targetMode === "maintain" ? `${lang} Balanced Acoustic Vibe` : `${lang} Upbeat Kuthu Hits`;
     } else if (bpm >= 67 && bpm <= 82) {
-      genreText = targetMode === "maintain" ? `${lang} Balanced Hits & Melodic Radio` : `${lang} High Tempo Gym Beats`;
+      genreText = targetMode === "maintain" ? `${lang} Balanced Hits & Chill Vibe` : `${lang} High Tempo Gym Kuthu Beats`;
     } else if (bpm >= 83 && bpm <= 170) {
-      genreText = targetMode === "maintain" ? `${lang} High-Energy Kuthu & Workout Pump` : `${lang} Calm Soothing Acoustic`;
+      genreText = targetMode === "maintain" ? `${lang} High-Energy Kuthu & Workout Pump` : `${lang} Calm Soothing Balanced Vibe`;
     } else if (bpm >= 171 && bpm <= 200) {
       genreText = `${lang} Guided Meditation & Stress Therapy`;
     } else {
@@ -920,7 +919,6 @@
 
     if (modalTimer) clearInterval(modalTimer);
 
-    // Reset Breakup override when modal is freshly opened
     isBreakupOverride = false;
     currentSelectedQuote = getRandomQuote(activeCategory);
     quoteText.innerText = currentSelectedQuote;
@@ -955,7 +953,6 @@
     const proceedBtn = document.getElementById('modal-proceed-btn');
     const lang = document.getElementById('lang-select').value;
     
-    // Lock Breakup Override Mode
     isBreakupOverride = true;
     currentSelectedQuote = getRandomQuote("breakup");
 
@@ -991,28 +988,27 @@
 
     let searchQuery = "";
 
-    // Strictly check if heartbreak mode was chosen
     if (isBreakupOverride) {
       searchQuery = languageBreakupMap[lang] || `${lang} heartbreak breakup soup songs playlist`;
     } else if (bpm < 55) {
       searchQuery = `${lang} deep sleep ambient relaxation calm meditation music`;
     } else if (bpm >= 55 && bpm <= 66) {
       if (targetMode === "maintain") {
-        searchQuery = `${lang} soft acoustic chill melodies lofi`;
+        searchQuery = `${lang} soft acoustic chill vibe lofi`;
       } else {
-        searchQuery = `${lang} energetic upbeat dance songs`;
+        searchQuery = `${lang} energetic upbeat kuthu dance songs`;
       }
     } else if (bpm >= 67 && bpm <= 82) {
       if (targetMode === "maintain") {
-        searchQuery = `${lang} balanced romantic hits melody songs`;
+        searchQuery = `${lang} balanced romantic hits vibe songs`;
       } else {
-        searchQuery = `${lang} fast upbeat workout gym beats`;
+        searchQuery = `${lang} fast upbeat workout gym kuthu beats`;
       }
     } else if (bpm >= 83 && bpm <= 170) {
       if (targetMode === "maintain") {
         searchQuery = `${lang} high energy fast kuthu workout pump up songs`;
       } else {
-        searchQuery = `${lang} slow calm peaceful soothing melody tracks`;
+        searchQuery = `${lang} slow calm peaceful soothing balanced vibe tracks`;
       }
     } else if (bpm >= 171 && bpm <= 200) {
       searchQuery = `${lang} stress relief binaural beats therapy relaxation`;
