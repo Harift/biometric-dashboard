@@ -51,73 +51,65 @@ HTML_TEMPLATE = """
       animation: bgPulseGlow 2.5s infinite ease-in-out;
     }
 
-    /* MAIN CONTAINER HOLDING CARD & PEEKING AVATAR */
     .app-wrapper {
       position: relative;
       width: 90%;
       max-width: 750px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      margin-top: 80px; /* Space for top-peeking avatar */
     }
 
-    /* FEMALE AVATAR LAYER (PEEKING FROM THE RIGHT EDGE) */
+    /* 2D FEMALE AVATAR (PEEKING OVER THE TOP-RIGHT EDGE) */
     .avatar-layer {
       position: absolute;
-      right: -130px; /* Positions avatar peeking from behind the right edge */
-      top: 50%;
-      transform: translateY(-50%);
-      z-index: 1; /* Layer behind main card (z-index: 10) */
+      top: -140px; /* Positions head and shoulders clearly above the top border */
+      right: 30px;
+      z-index: 15; /* Sits above the background frame so she is 100% visible */
       pointer-events: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.8s ease;
+      transition: all 0.5s ease;
     }
 
     .avatar-svg {
-      width: 280px;
-      height: 380px;
-      filter: drop-shadow(0 0 20px var(--accent-color));
+      width: 200px;
+      height: 180px;
+      filter: drop-shadow(0 0 12px var(--accent-color));
       transition: filter 0.8s ease;
     }
 
-    /* Mood Animation Classes for Peeking Motion */
+    /* Peeking Animations */
     .avatar-sleeping {
-      animation: peekSleep 4s infinite ease-in-out;
+      animation: peekFloatSleep 3.5s infinite ease-in-out;
     }
     .avatar-vibe {
-      animation: peekVibe 1.2s infinite ease-in-out;
+      animation: peekBopVibe 1.1s infinite ease-in-out;
     }
     .avatar-pumped {
-      animation: peekPump 0.6s infinite ease-in-out;
+      animation: peekWorkoutPump 0.5s infinite ease-in-out;
     }
     .avatar-concerned {
-      animation: peekConcern 0.35s infinite ease-in-out;
+      animation: peekAlertShake 0.3s infinite ease-in-out;
     }
 
-    @keyframes peekSleep {
-      0%, 100% { transform: translateY(-50%) translateX(0px); }
-      50% { transform: translateY(-47%) translateX(8px); }
+    @keyframes peekFloatSleep {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(6px); }
     }
-    @keyframes peekVibe {
-      0%, 100% { transform: translateY(-50%) rotate(0deg); }
-      50% { transform: translateY(-53%) rotate(2deg); }
+    @keyframes peekBopVibe {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(2deg); }
     }
-    @keyframes peekPump {
-      0%, 100% { transform: translateY(-50%) scale(1); }
-      50% { transform: translateY(-54%) scale(1.04) rotate(-2deg); }
+    @keyframes peekWorkoutPump {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-12px) scale(1.05) rotate(-2deg); }
     }
-    @keyframes peekConcern {
-      0%, 100% { transform: translateY(-50%) translateX(0); }
-      25% { transform: translateY(-50%) translateX(-4px) rotate(-1deg); }
-      75% { transform: translateY(-50%) translateX(4px) rotate(1deg); }
+    @keyframes peekAlertShake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px) rotate(-1deg); }
+      75% { transform: translateX(5px) rotate(1deg); }
     }
 
-    /* FRONT DASHBOARD CARD LAYER */
     .dashboard-card {
       position: relative;
-      z-index: 10; /* Front layer covering body of avatar */
+      z-index: 10;
       background: var(--card-bg);
       border: 1px solid var(--accent-color);
       border-radius: 20px;
@@ -269,7 +261,6 @@ HTML_TEMPLATE = """
       border: none !important;
     }
 
-    /* Modal Styling */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -311,58 +302,48 @@ HTML_TEMPLATE = """
 
 <div class="app-wrapper">
 
-  <!-- SIDE-PEEKING FEMALE AVATAR LAYER -->
+  <!-- 2D FEMALE AVATAR (TOP-RIGHT PEEKING) -->
   <div class="avatar-layer avatar-sleeping" id="avatar-container">
-    <svg class="avatar-svg" viewBox="0 0 250 350" xmlns="http://www.w3.org/2000/svg">
-      <!-- Glow aura background -->
-      <circle cx="110" cy="160" r="90" fill="var(--accent-color)" opacity="0.18" />
-      
-      <!-- Long Hair (Back Layer) -->
-      <path d="M 40 100 C 20 180, 25 280, 90 320 C 130 310, 160 250, 150 140 C 140 60, 60 50, 40 100 Z" fill="#2d1b4e" />
+    <svg class="avatar-svg" viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+      <!-- Back Hair -->
+      <path d="M 30 70 C 20 120, 30 170, 70 170 C 130 170, 170 120, 160 70 C 150 20, 40 20, 30 70 Z" fill="#4c1d95" />
 
-      <!-- Body / Shoulder peeking -->
-      <path d="M 30 220 Q 80 210 130 250 L 130 350 L 10 350 Z" fill="#1e1b4b" />
+      <!-- Head & Face Base -->
+      <ellipse cx="95" cy="85" rx="42" ry="40" fill="#fde047" />
       
-      <!-- Face Base (Tilted head peeking out) -->
-      <path d="M 35 120 C 35 70, 125 70, 125 120 C 125 175, 80 200, 45 185 C 35 170, 35 140, 35 120 Z" fill="#ffdfc4" />
-      
-      <!-- Soft Cheek Blush -->
-      <ellipse cx="60" cy="155" rx="10" ry="6" fill="#f43f5e" opacity="0.3" />
-      <ellipse cx="105" cy="155" rx="10" ry="6" fill="#f43f5e" opacity="0.3" />
+      <!-- Cheeks Blush -->
+      <ellipse cx="70" cy="96" rx="8" ry="4" fill="#f43f5e" opacity="0.4" />
+      <ellipse cx="120" cy="96" rx="8" ry="4" fill="#f43f5e" opacity="0.4" />
 
-      <!-- Front Hair / Bangs -->
-      <path d="M 35 110 Q 75 130 120 95 C 100 65, 55 65, 35 110 Z" fill="#3b0764" />
-      <path d="M 30 115 C 20 160, 35 230, 50 260 C 58 230, 45 160, 42 125 Z" fill="#3b0764" />
+      <!-- Hair Bangs -->
+      <path d="M 53 65 Q 95 85 137 65 C 120 40, 70 40, 53 65 Z" fill="#3b0764" />
 
-      <!-- Dynamic Eyes Layer -->
+      <!-- Dynamic Eyes -->
       <g id="avatar-eyes">
-        <!-- Default Sleeping Eyes -->
-        <path d="M 52 138 Q 62 144 72 138" stroke="#1e293b" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <path d="M 92 138 Q 102 144 112 138" stroke="#1e293b" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M 72 84 Q 80 90 88 84" stroke="#0f172a" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M 102 84 Q 110 90 118 84" stroke="#0f172a" stroke-width="3" fill="none" stroke-linecap="round"/>
       </g>
 
-      <!-- Dynamic Mouth Layer -->
+      <!-- Dynamic Mouth -->
       <g id="avatar-mouth">
-        <!-- Calm Sleeping Smile -->
-        <path d="M 76 168 Q 82 172 88 168" stroke="#be123c" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M 90 106 Q 95 110 100 106" stroke="#9f1239" stroke-width="2.5" fill="none" stroke-linecap="round"/>
       </g>
 
-      <!-- Dynamic Extras (Headphones, Sweatband, Expressions, Hands Peeking) -->
+      <!-- Dynamic Mood Props -->
       <g id="avatar-extras">
-        <!-- Floating Zzz for relaxed/sleeping state -->
-        <text x="125" y="90" fill="var(--accent-color)" font-size="18" font-weight="bold" opacity="0.8">Z</text>
-        <text x="140" y="72" fill="var(--accent-color)" font-size="13" font-weight="bold" opacity="0.6">z</text>
+        <text x="135" y="45" fill="var(--accent-color)" font-size="16" font-weight="bold" opacity="0.8">Z</text>
+        <text x="148" y="32" fill="var(--accent-color)" font-size="12" font-weight="bold" opacity="0.6">z</text>
       </g>
 
-      <!-- Peeking Hands gripping edge of front card -->
+      <!-- Hands Peeking on Top Edge of Dashboard Panel -->
       <g id="avatar-hands">
-        <rect x="8" y="170" width="14" height="24" rx="7" fill="#ffdfc4" stroke="#e2e8f0" stroke-width="1.5"/>
-        <rect x="8" y="200" width="14" height="24" rx="7" fill="#ffdfc4" stroke="#e2e8f0" stroke-width="1.5"/>
+        <ellipse cx="68" cy="138" rx="14" ry="9" fill="#fde047" stroke="#3b0764" stroke-width="2" />
+        <ellipse cx="122" cy="138" rx="14" ry="9" fill="#fde047" stroke="#3b0764" stroke-width="2" />
       </g>
     </svg>
   </div>
 
-  <!-- FRONT DASHBOARD CARD LAYER -->
+  <!-- DASHBOARD CARD -->
   <div class="dashboard-card" id="main-card">
     
     <div class="header-bar">
@@ -582,54 +563,46 @@ HTML_TEMPLATE = """
     avatarContainer.className = "avatar-layer avatar-" + moodState;
 
     if (moodState === "sleeping") {
-      // Resting Sleeping Eye Arcs & Soft Smile
       eyesGroup.innerHTML = `
-        <path d="M 52 138 Q 62 144 72 138" stroke="#1e293b" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <path d="M 92 138 Q 102 144 112 138" stroke="#1e293b" stroke-width="3" fill="none" stroke-linecap="round"/>`;
-      mouthGroup.innerHTML = `<path d="M 76 168 Q 82 172 88 168" stroke="#be123c" stroke-width="2.5" fill="none" stroke-linecap="round"/>`;
+        <path d="M 72 84 Q 80 90 88 84" stroke="#0f172a" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M 102 84 Q 110 90 118 84" stroke="#0f172a" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+      mouthGroup.innerHTML = `<path d="M 90 106 Q 95 110 100 106" stroke="#9f1239" stroke-width="2.5" fill="none" stroke-linecap="round"/>`;
       extrasGroup.innerHTML = `
-        <text x="125" y="90" fill="var(--accent-color)" font-size="18" font-weight="bold" opacity="0.8">Z</text>
-        <text x="140" y="72" fill="var(--accent-color)" font-size="13" font-weight="bold" opacity="0.6">z</text>`;
+        <text x="135" y="45" fill="var(--accent-color)" font-size="16" font-weight="bold" opacity="0.8">Z</text>
+        <text x="148" y="32" fill="var(--accent-color)" font-size="12" font-weight="bold" opacity="0.6">z</text>`;
     } else if (moodState === "vibe") {
-      // Big Happy Anime Eyes & Glowing Headphones
       eyesGroup.innerHTML = `
-        <ellipse cx="62" cy="136" rx="6" ry="7" fill="#0f172a" />
-        <circle cx="64" cy="134" r="2" fill="#ffffff" />
-        <ellipse cx="102" cy="136" rx="6" ry="7" fill="#0f172a" />
-        <circle cx="104" cy="134" r="2" fill="#ffffff" />`;
-      mouthGroup.innerHTML = `<path d="M 74 164 Q 82 176 90 164" stroke="#be123c" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+        <circle cx="80" cy="83" r="5" fill="#0f172a" />
+        <circle cx="82" cy="81" r="1.5" fill="#ffffff" />
+        <circle cx="110" cy="83" r="5" fill="#0f172a" />
+        <circle cx="112" cy="81" r="1.5" fill="#ffffff" />`;
+      mouthGroup.innerHTML = `<path d="M 88 102 Q 95 112 102 102" stroke="#9f1239" stroke-width="3" fill="none" stroke-linecap="round"/>`;
       extrasGroup.innerHTML = `
-        <!-- Headphones -->
-        <path d="M 32 130 C 30 70, 128 70, 126 130" stroke="var(--accent-color)" stroke-width="7" fill="none"/>
-        <rect x="22" y="118" width="14" height="28" rx="6" fill="var(--accent-color)"/>
-        <rect x="122" y="118" width="14" height="28" rx="6" fill="var(--accent-color)"/>`;
+        <path d="M 48 80 C 46 30, 144 30, 142 80" stroke="var(--accent-color)" stroke-width="6" fill="none"/>
+        <rect x="40" y="70" width="12" height="24" rx="5" fill="var(--accent-color)"/>
+        <rect x="138" y="70" width="12" height="24" rx="5" fill="var(--accent-color)"/>`;
     } else if (moodState === "pumped") {
-      // Energetic Expression, Sweatband & Sweat Drop
       eyesGroup.innerHTML = `
-        <path d="M 54 130 L 68 136" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round"/>
-        <path d="M 110 130 L 96 136" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round"/>
-        <circle cx="63" cy="138" r="4.5" fill="#0f172a" />
-        <circle cx="99" cy="138" r="4.5" fill="#0f172a" />`;
-      mouthGroup.innerHTML = `<ellipse cx="82" cy="166" rx="8" ry="5" fill="#be123c" />`;
+        <path d="M 72 78 L 86 84" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+        <path d="M 118 78 L 104 84" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="81" cy="85" r="4" fill="#0f172a" />
+        <circle cx="109" cy="85" r="4" fill="#0f172a" />`;
+      mouthGroup.innerHTML = `<ellipse cx="95" cy="105" rx="7" ry="4" fill="#9f1239" />`;
       extrasGroup.innerHTML = `
-        <!-- Sports Headband -->
-        <path d="M 34 105 Q 80 115 124 100 L 122 114 Q 80 126 34 116 Z" fill="var(--accent-color)" />
-        <!-- Sweat Drop -->
-        <path d="M 122 138 Q 126 146 122 150 Q 118 146 122 138" fill="#38bdf8" />`;
+        <rect x="53" y="60" width="84" height="10" rx="4" fill="var(--accent-color)" />
+        <path d="M 134 85 Q 138 92 134 95 Q 130 92 134 85" fill="#38bdf8" />`;
     } else if (moodState === "concerned") {
-      // Worried Eyes, Frown & Alert Symbols
       eyesGroup.innerHTML = `
-        <circle cx="60" cy="135" r="7" fill="none" stroke="#0f172a" stroke-width="2.5"/>
-        <circle cx="60" cy="135" r="2.5" fill="#0f172a"/>
-        <circle cx="102" cy="135" r="7" fill="none" stroke="#0f172a" stroke-width="2.5"/>
-        <circle cx="102" cy="135" r="2.5" fill="#0f172a"/>
-        <path d="M 52 122 L 68 127" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
-        <path d="M 110 122 L 94 127" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>`;
-      mouthGroup.innerHTML = `<path d="M 74 170 Q 82 160 90 170" stroke="#be123c" stroke-width="3.5" fill="none" stroke-linecap="round"/>`;
+        <circle cx="78" cy="82" r="6" fill="none" stroke="#0f172a" stroke-width="2.5"/>
+        <circle cx="78" cy="82" r="2" fill="#0f172a"/>
+        <circle cx="112" cy="82" r="6" fill="none" stroke="#0f172a" stroke-width="2.5"/>
+        <circle cx="112" cy="82" r="2" fill="#0f172a"/>
+        <path d="M 70 73 L 84 77" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M 120 73 L 106 77" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>`;
+      mouthGroup.innerHTML = `<path d="M 88 108 Q 95 100 102 108" stroke="#9f1239" stroke-width="3" fill="none" stroke-linecap="round"/>`;
       extrasGroup.innerHTML = `
-        <!-- Alert Signs -->
-        <text x="130" y="110" fill="#ef4444" font-size="24" font-weight="900">!</text>
-        <text x="25" y="110" fill="#ef4444" font-size="24" font-weight="900">!</text>`;
+        <text x="138" y="60" fill="#ef4444" font-size="20" font-weight="900">!</text>
+        <text x="42" y="60" fill="#ef4444" font-size="20" font-weight="900">!</text>`;
     }
   }
 
