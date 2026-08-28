@@ -189,6 +189,19 @@
       gap: 4px;
     }
 
+    .quote-box {
+      grid-column: span 2;
+      background: rgba(255, 255, 255, 0.03);
+      border-left: 3px solid var(--accent-color);
+      padding: 10px 14px;
+      border-radius: 0 8px 8px 0;
+      font-style: italic;
+      font-size: 13px;
+      color: #e2e8f0;
+      line-height: 1.4;
+      transition: all 0.5s ease;
+    }
+
     .info-title {
       font-size: 11px;
       color: var(--text-muted);
@@ -257,8 +270,15 @@
       transition: all 0.3s ease;
     }
 
-    .btn-submit:hover {
+    .btn-submit:hover:not(:disabled) {
       filter: brightness(1.2);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background: #475569;
+      color: #cbd5e1;
     }
 
     /* MOBILE MEDIA QUERY */
@@ -280,6 +300,10 @@
 
       .info-panel {
         grid-template-columns: 1fr;
+      }
+
+      .quote-box {
+        grid-column: span 1;
       }
 
       .controls-grid {
@@ -336,6 +360,9 @@
         <span class="info-title">RECOMMENDED GENRE</span>
         <span class="info-value" id="suggested-genre">Waiting for Selection...</span>
       </div>
+      <div class="quote-box" id="dynamic-quote">
+        "Awaiting biometric stream to generate neural advice..."
+      </div>
     </div>
 
     <div class="controls-grid">
@@ -355,6 +382,7 @@
         <select id="target-mode" onchange="updateAnalysis()">
           <option value="maintain">Maintain My Mood</option>
           <option value="change">Change My Mood</option>
+          <option value="breakup">Breakup Vibe</option>
         </select>
       </div>
 
@@ -377,6 +405,7 @@
   let activeInputMode = "manual";
   let activeWaveColor = '#38bdf8';
   let currentEmotion = "neutral";
+  let activeQuoteText = "";
 
   // ECG Graph Logic
   const canvas = document.getElementById('ecgCanvas');
@@ -624,41 +653,60 @@
     
     const moodEl = document.getElementById('detected-mood');
     const genreEl = document.getElementById('suggested-genre');
+    const quoteEl = document.getElementById('dynamic-quote');
 
     if (!bpm || bpm <= 0) {
       applyDynamicTheme("#030712", "#090d16", "#030712", "#38bdf8", "rgba(56, 189, 248, 0.15)", "#64748b");
       setKurisuDialogue("neutral", '"Awaiting biometric stream synchronization..."');
       moodEl.innerText = "Waiting for Data...";
       genreEl.innerText = "Waiting for Selection...";
+      quoteEl.innerText = '"Awaiting biometric stream to generate neural advice..."';
       return;
     }
 
+    // SPECIAL BREAKUP MODE
+    if (targetMode === "breakup") {
+      applyDynamicTheme("#2a0a18", "#3b1123", "#1f0611", "#ec4899", "rgba(236, 72, 153, 0.45)", "#fbcfe8");
+      setKurisuDialogue("tsundere", '"Oh, heartbroken are we? Crying over an ex won\'t fix your pulse!"');
+      moodEl.innerText = "Heartbroken / Processing Pain";
+      genreEl.innerText = `${lang} Deep Heartbreak Melodies`;
+      activeQuoteText = '"You\'re crying over someone who replaced you like a software update? Hit the gym, fix your life, and delete their number."';
+      quoteEl.innerText = activeQuoteText;
+      return;
+    }
+
+    // REGULAR BPM MODES
     if (bpm < 55) {
       applyDynamicTheme("#140924", "#1b0c30", "#0e061a", "#c084fc", "rgba(192, 132, 252, 0.45)", "#e9d5ff");
       setKurisuDialogue("concerned", '"Low pulse anomaly detected. Recommending ambient recovery audio."');
       moodEl.innerText = "Critically Low BPM (< 55)";
       genreEl.innerText = "Rest & Ambient Sounds";
+      activeQuoteText = '"Peace comes from within. Slow down, breathe, and let the storm pass around you."';
     } else if (bpm >= 55 && bpm <= 82) {
       applyDynamicTheme("#031c14", "#062b1f", "#02120d", "#22c55e", "rgba(34, 197, 94, 0.4)", "#86efac");
       setKurisuDialogue("calm", '"Optimal biometric rhythm achieved. Core state stabilized."');
       moodEl.innerText = "Calm Baseline / Peaceful Vibe";
+      activeQuoteText = '"A tranquil mind brings inner strength and self-confidence."';
     } else if (bpm >= 83 && bpm <= 170) {
       applyDynamicTheme("#240909", "#360e0e", "#190505", "#f97316", "rgba(249, 115, 22, 0.45)", "#fdba74");
       setKurisuDialogue("tsundere", '"Elevated heart rate registered! Adjusting frequency output."');
       moodEl.innerText = "High Energy / Excited / Stressed";
+      activeQuoteText = '"Channel that fiery pulse into relentless momentum. Do not break—dominate!"';
     } else {
       applyDynamicTheme("#330505", "#4a0808", "#240303", "#ef4444", "rgba(239, 68, 68, 0.5)", "#fca5a5");
       setKurisuDialogue("concerned", '"Warning: Extreme BPM overload! Initiate immediate relaxation sequence."');
       moodEl.innerText = "BPM Too High (> 170 BPM)";
       genreEl.innerText = "Rest & Medical Caution";
-      return;
+      activeQuoteText = '"Pause immediately. Even the strongest engines overheat when driven endlessly."';
     }
+
+    quoteEl.innerText = activeQuoteText;
 
     let genreText = "";
     if (targetMode === "maintain") {
       if (bpm >= 55 && bpm <= 82) genreText = `${lang} Chill & Soft Hits`;
       else genreText = `${lang} Motivational Workout Tracks`;
-    } else {
+    } else if (targetMode === "change") {
       if (bpm >= 55 && bpm <= 82) genreText = `${lang} Energetic Workout Tracks`;
       else genreText = `${lang} Deep Relaxation Melodies`;
     }
@@ -667,12 +715,15 @@
   }
 
   function handleRecommendationClick() {
+    const btn = document.getElementById('rec-btn');
     const lang = document.getElementById('lang-select').value;
     const targetMode = document.getElementById('target-mode').value;
     const bpm = getActiveBPM();
 
     let query = `${lang} mood relaxation music`;
-    if (targetMode === "maintain") {
+    if (targetMode === "breakup") {
+      query = `${lang} breakup emotional sad songs heartbreak music`;
+    } else if (targetMode === "maintain") {
       if (bpm >= 55 && bpm <= 82) query = `${lang} chill relaxing love romantic songs`;
       else query = `${lang} motivational gym pump up songs`;
     } else {
@@ -680,7 +731,20 @@
       else query = `${lang} deep relaxation calm soothing melodies`;
     }
 
-    window.open(`https://music.youtube.com/search?q=${encodeURIComponent(query)}`, '_blank');
+    btn.disabled = true;
+    let timeLeft = 5;
+
+    const timer = setInterval(() => {
+      if (timeLeft > 0) {
+        btn.innerText = `Quote: ${activeQuoteText} (Opening in ${timeLeft}s...)`;
+        timeLeft--;
+      } else {
+        clearInterval(timer);
+        btn.innerText = "Open YouTube Music Recommendation →";
+        btn.disabled = false;
+        window.open(`https://music.youtube.com/search?q=${encodeURIComponent(query)}`, '_blank');
+      }
+    }, 1000);
   }
 
   window.addEventListener('DOMContentLoaded', () => {
