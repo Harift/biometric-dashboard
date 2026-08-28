@@ -36,7 +36,7 @@ HTML_TEMPLATE = """
       border: 1px solid #1e2942;
       border-radius: 20px;
       width: 90%;
-      max-width: 750px; /* Widened interface */
+      max-width: 750px;
       padding: 32px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.6);
       display: flex;
@@ -147,12 +147,11 @@ HTML_TEMPLATE = """
 
 <div class="dashboard-card">
   
-  <!-- Header Connection & Interactive Mode Bar -->
   <div class="header-bar">
     <span>ESP32 STATUS: <span class="status-live">LIVE [GPIO 13]</span></span>
     <div>
       <span style="color: #94a3b8; margin-right: 8px;">ACTIVE SYSTEM:</span>
-      <select class="mode-select-header" id="system-mode" onchange="updateModeLabel()">
+      <select class="mode-select-header" id="system-mode">
         <option value="Mode 1: Manual Pulse">Mode 1: Manual Pulse</option>
         <option value="Mode 2: ESP32 Touch" selected>Mode 2: ESP32 Touch</option>
         <option value="Mode 3: Continuous Stream">Mode 3: Continuous Stream</option>
@@ -160,16 +159,12 @@ HTML_TEMPLATE = """
     </div>
   </div>
 
-  <!-- Real-Time Heart Rate & ECG Canvas Display -->
   <div class="bpm-container">
     <div style="font-size: 12px; color: #94a3b8; font-weight: bold; letter-spacing: 1.5px;">BIOMETRIC STREAM</div>
     <div class="bpm-value" id="bpm-val">-- <span style="font-size: 24px;">BPM</span></div>
-    
-    <!-- Dynamic Waveform Graph -->
     <canvas id="ecgCanvas" width="600" height="70"></canvas>
   </div>
 
-  <!-- Dual Selection Grid -->
   <div class="controls-grid">
     
     <!-- Language Selection -->
@@ -184,23 +179,22 @@ HTML_TEMPLATE = """
       </select>
     </div>
 
-    <!-- Mode Recommendation Preference -->
+    <!-- Biomatch Target Mode (2 Target Modes) -->
     <div class="form-group">
       <label for="target-mode">BIOMATCH TARGET MODE</label>
       <select id="target-mode">
-        <option value="relax">RELAX (Lower BPM)</option>
-        <option value="energize">ENERGIZE (Match High BPM)</option>
-        <option value="focus">FOCUS (Balanced BPM)</option>
+        <option value="change">Change My Mood</option>
+        <option value="maintain">Maintain My Mood</option>
       </select>
     </div>
 
-    <button class="btn-submit" onclick="generatePlaylist()">Generate Recommendation →</button>
+    <button class="btn-submit" onclick="generateYouTubeRecommendation()">Open YouTube Music Recommendation →</button>
   </div>
 
 </div>
 
 <script>
-  // Oscilloscope Animation logic
+  // Dynamic Canvas ECG Waveform Animation
   const canvas = document.getElementById('ecgCanvas');
   const ctx = canvas.getContext('2d');
   let x = 0;
@@ -228,12 +222,7 @@ HTML_TEMPLATE = """
   }
   drawECG();
 
-  function updateModeLabel() {
-    const activeMode = document.getElementById('system-mode').value;
-    console.log("System Mode switched to:", activeMode);
-  }
-
-  // Fetch real-time BPM sent by ESP32 via backend API
+  // Polling backend endpoint for live ESP32 BPM values
   async function pollESP32BPM() {
     try {
       const res = await fetch('/api/bpm');
@@ -246,17 +235,40 @@ HTML_TEMPLATE = """
       console.log("Polling ESP32 data...");
     }
   }
-
-  // Poll backend every 1000ms
   setInterval(pollESP32BPM, 1000);
 
-  function generatePlaylist() {
+  // Direct YouTube Music Search Generator
+  function generateYouTubeRecommendation() {
     const lang = document.getElementById('lang-select').value;
     const targetMode = document.getElementById('target-mode').value;
-    const activeSysMode = document.getElementById('system-mode').value;
-    const currentBpm = document.getElementById('bpm-val').innerText.split(' ')[0];
+    
+    // Extract numerical heart rate
+    const bpmText = document.getElementById('bpm-val').innerText;
+    const bpm = parseInt(bpmText) || 72;
 
-    alert(`Fetching Music Recommendations!\n\nSystem: ${activeSysMode}\nLanguage: ${lang}\nTarget Mode: ${targetMode.toUpperCase()}\nLive Biometric: ${currentBpm} BPM`);
+    let query = "";
+
+    if (targetMode === "change") {
+      // Logic for "Change My Mood": If BPM is high, fetch relaxing music. If low, fetch energetic music.
+      if (bpm > 85) {
+        query = `${lang} relaxing calm soothing music songs`;
+      } else {
+        query = `${lang} high energy upbeat workout songs`;
+      }
+    } else {
+      // Logic for "Maintain My Mood": Match the current state directly
+      if (bpm > 85) {
+        query = `${lang} energetic high tempo party songs`;
+      } else if (bpm < 65) {
+        query = `${lang} deep relaxation ambient meditation music`;
+      } else {
+        query = `${lang} chill pleasant acoustic melody songs`;
+      }
+    }
+
+    // Launch YouTube Music with targeted search query in a new tab
+    const ytMusicUrl = `https://music.youtube.com/search?q=${encodeURIComponent(query)}`;
+    window.open(ytMusicUrl, '_blank');
   }
 </script>
 
@@ -264,16 +276,16 @@ HTML_TEMPLATE = """
 </html>
 """
 
-# --- BACKEND SERVER ROUTES ---
+# --- FLASK API ROUTES ---
 
 @app.route('/')
 def home():
-    """Serves the dashboard interface"""
+    """Serves the main biometric dashboard interface"""
     return render_template_string(HTML_TEMPLATE)
 
 @app.route('/api/bpm', methods=['GET', 'POST'])
 def handle_bpm():
-    """Receives data from ESP32 (POST) and serves data to Frontend UI (GET)"""
+    """Receives heart rate from ESP32 POST request and provides GET polling for UI"""
     global latest_biometrics
     
     if request.method == 'POST':
@@ -285,7 +297,6 @@ def handle_bpm():
             return jsonify({"status": "success", "received": data['bpm']}), 200
         return jsonify({"status": "error", "message": "Invalid JSON payload"}), 400
 
-    # GET request called by UI polling loop
     return jsonify(latest_biometrics)
 
 if __name__ == '__main__':
