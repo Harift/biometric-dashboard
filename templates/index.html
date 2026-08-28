@@ -345,12 +345,15 @@
       border: 1px solid #ec4899;
       color: #fbcfe8;
       cursor: pointer;
-      font-size: 12px;
-      padding: 8px 12px;
+      font-size: 13px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      transition: all 0.3s ease;
     }
 
     .btn-breakup-toggle:hover {
-      background: rgba(236, 72, 153, 0.4);
+      background: rgba(236, 72, 153, 0.45);
+      box-shadow: 0 0 12px rgba(236, 72, 153, 0.5);
     }
 
     .btn-modal-proceed {
@@ -565,6 +568,14 @@
       '📱 "Your heart rate spiked for someone who couldn\'t reply to a text? Time for soup songs! 🥣"',
       '🦠 "A breakup is just the universe\'s way of un-installing toxic malware from your life 🚫"'
     ]
+  };
+
+  const languageBreakupMap = {
+    Tamil: "Tamil soup songs love failure hits breakup songs playlist",
+    Hindi: "Hindi sad breakup songs heartbreak playlist arijit singh sad hits",
+    International: "International sad pop heartbreak breakup playlist acoustic sad songs",
+    Telugu: "Telugu love failure songs sad breakup playlist",
+    Malayalam: "Malayalam sad songs breakup heartbreak playlist"
   };
 
   let isHardwareConnected = false;
@@ -934,6 +945,8 @@
 
   function enableBreakupMode() {
     const proceedBtn = document.getElementById('modal-proceed-btn');
+    const lang = document.getElementById('lang-select').value;
+    
     isBreakupOverride = true;
     activeCategory = "breakup";
     currentSelectedQuote = getRandomQuote("breakup");
@@ -942,20 +955,22 @@
     document.getElementById('breakup-toggle-btn').style.display = 'none';
     setKurisuDialogue('"Switched to Heartbreak mode. Loading soup playlist..."');
 
-    document.getElementById('suggested-genre').innerText = `${document.getElementById('lang-select').value} Breakup & Soup Songs Playlist`;
+    document.getElementById('suggested-genre').innerText = `${lang} Breakup & Soup Songs Playlist`;
 
     proceedBtn.disabled = true;
-    let timeLeft = 7;
+    let timeLeft = 3;
 
     if (modalTimer) clearInterval(modalTimer);
 
+    proceedBtn.innerText = `Preparing ${lang} Soup & Heartbreak Playlist (${timeLeft}s)...`;
+
     modalTimer = setInterval(() => {
+      timeLeft--;
       if (timeLeft > 0) {
-        proceedBtn.innerText = `Preparing Soup & Heartbreak Playlist (${timeLeft}s)...`;
-        timeLeft--;
+        proceedBtn.innerText = `Preparing ${lang} Soup & Heartbreak Playlist (${timeLeft}s)...`;
       } else {
         clearInterval(modalTimer);
-        proceedBtn.innerText = "Launch YouTube Breakup & Soup Songs →";
+        proceedBtn.innerText = `Launch YouTube ${lang} Breakup Playlist →`;
         proceedBtn.disabled = false;
       }
     }, 1000);
@@ -969,7 +984,7 @@
     let searchQuery = "";
 
     if (isBreakupOverride) {
-      searchQuery = `${lang} breakup songs heartbreak soup songs love failure hits playlist`;
+      searchQuery = languageBreakupMap[lang] || `${lang} heartbreak breakup soup songs playlist`;
     } else if (bpm < 55) {
       searchQuery = `${lang} deep sleep ambient relaxation calm meditation music`;
     } else if (bpm >= 55 && bpm <= 66) {
