@@ -35,13 +35,13 @@ HTML_TEMPLATE = """
       background: #131e3a;
       border: 1px solid #1e2942;
       border-radius: 20px;
-      width: 100%;
-      max-width: 480px;
-      padding: 24px;
+      width: 90%;
+      max-width: 750px; /* Widened interface */
+      padding: 32px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.6);
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 24px;
     }
 
     .header-bar {
@@ -49,9 +49,9 @@ HTML_TEMPLATE = """
       justify-content: space-between;
       align-items: center;
       background: #0a0f1d;
-      padding: 12px 16px;
+      padding: 14px 20px;
       border-radius: 12px;
-      font-size: 13px;
+      font-size: 14px;
       border: 1px solid #1c2b4e;
     }
 
@@ -60,16 +60,27 @@ HTML_TEMPLATE = """
       font-weight: bold;
     }
 
+    .mode-select-header {
+      background: #1c2b4e;
+      color: #38bdf8;
+      border: 1px solid #38bdf8;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
     .bpm-container {
       text-align: center;
       background: #090d1a;
-      padding: 24px;
+      padding: 28px;
       border-radius: 16px;
       border: 1px solid #1e2942;
     }
 
     .bpm-value {
-      font-size: 56px;
+      font-size: 64px;
       font-weight: bold;
       color: #38bdf8;
       margin: 8px 0;
@@ -79,25 +90,31 @@ HTML_TEMPLATE = """
       background: #020617;
       border-radius: 8px;
       width: 100%;
-      height: 60px;
-      margin-top: 10px;
+      height: 70px;
+      margin-top: 12px;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
     }
 
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
     }
 
     label {
-      font-size: 13px;
+      font-size: 12px;
       color: #94a3b8;
-      font-weight: 600;
-      letter-spacing: 0.5px;
+      font-weight: 700;
+      letter-spacing: 1px;
     }
 
     select, button {
-      padding: 12px 16px;
+      padding: 14px 16px;
       border-radius: 10px;
       border: none;
       font-size: 14px;
@@ -111,65 +128,79 @@ HTML_TEMPLATE = """
       cursor: pointer;
     }
 
-    .mode-buttons {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
+    .btn-submit {
+      grid-column: span 2;
+      background: #38bdf8;
+      color: #0b1329;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.2s ease;
     }
 
-    .btn-relax { background: #3b82f6; color: white; cursor: pointer; }
-    .btn-energize { background: #22c55e; color: black; cursor: pointer; }
-    .btn-submit { background: #38bdf8; color: black; cursor: pointer; }
-
-    button:hover { opacity: 0.9; }
+    .btn-submit:hover {
+      background: #7dd3fc;
+    }
   </style>
 </head>
 <body>
 
 <div class="dashboard-card">
   
-  <!-- Header Connection Bar -->
+  <!-- Header Connection & Interactive Mode Bar -->
   <div class="header-bar">
     <span>ESP32 STATUS: <span class="status-live">LIVE [GPIO 13]</span></span>
-    <span>MODE 2</span>
+    <div>
+      <span style="color: #94a3b8; margin-right: 8px;">ACTIVE SYSTEM:</span>
+      <select class="mode-select-header" id="system-mode" onchange="updateModeLabel()">
+        <option value="Mode 1: Manual Pulse">Mode 1: Manual Pulse</option>
+        <option value="Mode 2: ESP32 Touch" selected>Mode 2: ESP32 Touch</option>
+        <option value="Mode 3: Continuous Stream">Mode 3: Continuous Stream</option>
+      </select>
+    </div>
   </div>
 
   <!-- Real-Time Heart Rate & ECG Canvas Display -->
   <div class="bpm-container">
-    <div style="font-size: 12px; color: #94a3b8; font-weight: bold; letter-spacing: 1px;">BIOMETRIC STREAM</div>
-    <div class="bpm-value" id="bpm-val">-- <span style="font-size: 20px;">BPM</span></div>
+    <div style="font-size: 12px; color: #94a3b8; font-weight: bold; letter-spacing: 1.5px;">BIOMETRIC STREAM</div>
+    <div class="bpm-value" id="bpm-val">-- <span style="font-size: 24px;">BPM</span></div>
     
     <!-- Dynamic Waveform Graph -->
-    <canvas id="ecgCanvas" width="400" height="60"></canvas>
+    <canvas id="ecgCanvas" width="600" height="70"></canvas>
   </div>
 
-  <!-- Step 1: Preferred Language Input -->
-  <div id="step-lang" class="form-group">
-    <label for="lang-select">SELECT MUSIC LANGUAGE</label>
-    <select id="lang-select">
-      <option value="English">English</option>
-      <option value="Hindi">Hindi</option>
-      <option value="Tamil">Tamil</option>
-      <option value="Spanish">Spanish</option>
-    </select>
-    <button class="btn-submit" onclick="confirmLanguage()">Continue →</button>
-  </div>
-
-  <!-- Step 2: Mode Targets (Hidden until step 1 complete) -->
-  <div id="step-mode" class="form-group" style="display: none;">
-    <label>SELECT AUDIO BIOMATCH TARGET</label>
-    <div class="mode-buttons">
-      <button class="btn-relax" onclick="fetchRecommendations('relax')">RELAX (Lower BPM)</button>
-      <button class="btn-energize" onclick="fetchRecommendations('energize')">ENERGIZE (Match BPM)</button>
+  <!-- Dual Selection Grid -->
+  <div class="controls-grid">
+    
+    <!-- Language Selection -->
+    <div class="form-group">
+      <label for="lang-select">SELECT MUSIC LANGUAGE</label>
+      <select id="lang-select">
+        <option value="Tamil">Tamil</option>
+        <option value="International">International</option>
+        <option value="Hindi">Hindi</option>
+        <option value="Telugu">Telugu</option>
+        <option value="Malayalam">Malayalam</option>
+      </select>
     </div>
+
+    <!-- Mode Recommendation Preference -->
+    <div class="form-group">
+      <label for="target-mode">BIOMATCH TARGET MODE</label>
+      <select id="target-mode">
+        <option value="relax">RELAX (Lower BPM)</option>
+        <option value="energize">ENERGIZE (Match High BPM)</option>
+        <option value="focus">FOCUS (Balanced BPM)</option>
+      </select>
+    </div>
+
+    <button class="btn-submit" onclick="generatePlaylist()">Generate Recommendation →</button>
   </div>
 
 </div>
 
 <script>
-  let selectedLanguage = "English";
-
-  // Canvas Oscilloscope Animation logic
+  // Oscilloscope Animation logic
   const canvas = document.getElementById('ecgCanvas');
   const ctx = canvas.getContext('2d');
   let x = 0;
@@ -183,12 +214,12 @@ HTML_TEMPLATE = """
     ctx.lineWidth = 2;
     ctx.moveTo(x, canvas.height / 2);
     
-    x += 3;
+    x += 4;
     if (x > canvas.width) x = 0;
     
     let y = canvas.height / 2;
-    if (x % 50 > 20 && x % 50 < 30) {
-      y += (Math.random() - 0.5) * 35;
+    if (x % 60 > 25 && x % 60 < 35) {
+      y += (Math.random() - 0.5) * 40;
     }
     
     ctx.lineTo(x, y);
@@ -197,10 +228,9 @@ HTML_TEMPLATE = """
   }
   drawECG();
 
-  function confirmLanguage() {
-    selectedLanguage = document.getElementById('lang-select').value;
-    document.getElementById('step-lang').style.display = 'none';
-    document.getElementById('step-mode').style.display = 'flex';
+  function updateModeLabel() {
+    const activeMode = document.getElementById('system-mode').value;
+    console.log("System Mode switched to:", activeMode);
   }
 
   // Fetch real-time BPM sent by ESP32 via backend API
@@ -210,19 +240,23 @@ HTML_TEMPLATE = """
       const data = await res.json();
       
       if (data && data.bpm) {
-        document.getElementById('bpm-val').innerHTML = `${data.bpm} <span style="font-size: 20px;">BPM</span>`;
+        document.getElementById('bpm-val').innerHTML = `${data.bpm} <span style="font-size: 24px;">BPM</span>`;
       }
     } catch (err) {
-      console.log("Polling ESP32 data error:", err);
+      console.log("Polling ESP32 data...");
     }
   }
 
   // Poll backend every 1000ms
   setInterval(pollESP32BPM, 1000);
 
-  function fetchRecommendations(mode) {
+  function generatePlaylist() {
+    const lang = document.getElementById('lang-select').value;
+    const targetMode = document.getElementById('target-mode').value;
+    const activeSysMode = document.getElementById('system-mode').value;
     const currentBpm = document.getElementById('bpm-val').innerText.split(' ')[0];
-    alert(`Triggering recommendations!\nMode: ${mode.toUpperCase()}\nLanguage: ${selectedLanguage}\nCurrent BPM: ${currentBpm}`);
+
+    alert(`Fetching Music Recommendations!\n\nSystem: ${activeSysMode}\nLanguage: ${lang}\nTarget Mode: ${targetMode.toUpperCase()}\nLive Biometric: ${currentBpm} BPM`);
   }
 </script>
 
@@ -255,5 +289,4 @@ def handle_bpm():
     return jsonify(latest_biometrics)
 
 if __name__ == '__main__':
-    # Flask port setup matching typical deployment defaults
     app.run(host='0.0.0.0', port=5000)
