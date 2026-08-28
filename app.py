@@ -22,15 +22,14 @@ HTML_TEMPLATE = """
   <title>BioSync - Dynamic Biometric Music</title>
   <style>
     :root {
-      --bg-color: #000000;
-      --card-bg: #000000;
-      --container-bg: #050505;
+      --bg-color: #030712;
+      --card-bg: #090d16;
+      --container-bg: #030712;
       --accent-color: #38bdf8;
       --glow-color: rgba(56, 189, 248, 0.2);
       --text-muted: #94a3b8;
     }
 
-    /* 2-Second Ambient Entire Background Glow */
     @keyframes bgPulseGlow {
       0% { box-shadow: inset 0 0 40px var(--glow-color); }
       50% { box-shadow: inset 0 0 120px var(--glow-color); }
@@ -49,80 +48,87 @@ HTML_TEMPLATE = """
       overflow: hidden;
       position: relative;
       transition: background-color 0.8s ease;
-      animation: bgPulseGlow 2s infinite ease-in-out;
+      animation: bgPulseGlow 2.5s infinite ease-in-out;
     }
 
-    /* AVATAR LAYER (Positioned between BG and Dashboard Card) */
+    /* MAIN CONTAINER HOLDING CARD & PEEKING AVATAR */
+    .app-wrapper {
+      position: relative;
+      width: 90%;
+      max-width: 750px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* FEMALE AVATAR LAYER (PEEKING FROM THE RIGHT EDGE) */
     .avatar-layer {
       position: absolute;
+      right: -130px; /* Positions avatar peeking from behind the right edge */
       top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 1; /* Layer behind front dashboard (z-index: 10) */
+      transform: translateY(-50%);
+      z-index: 1; /* Layer behind main card (z-index: 10) */
       pointer-events: none;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      opacity: 0.85;
       transition: all 0.8s ease;
     }
 
     .avatar-svg {
-      width: 380px;
+      width: 280px;
       height: 380px;
-      filter: drop-shadow(0 0 25px var(--accent-color));
+      filter: drop-shadow(0 0 20px var(--accent-color));
       transition: filter 0.8s ease;
     }
 
-    /* Mood Animation Classes */
+    /* Mood Animation Classes for Peeking Motion */
     .avatar-sleeping {
-      animation: sleepFloat 4s infinite ease-in-out;
+      animation: peekSleep 4s infinite ease-in-out;
     }
     .avatar-vibe {
-      animation: vibeBop 1.2s infinite ease-in-out;
+      animation: peekVibe 1.2s infinite ease-in-out;
     }
     .avatar-pumped {
-      animation: workoutPump 0.6s infinite ease-in-out;
+      animation: peekPump 0.6s infinite ease-in-out;
     }
     .avatar-concerned {
-      animation: concernedShake 0.4s infinite ease-in-out;
+      animation: peekConcern 0.35s infinite ease-in-out;
     }
 
-    @keyframes sleepFloat {
-      0%, 100% { transform: translateY(0px) rotate(0deg); }
-      50% { transform: translateY(-15px) rotate(-2deg); }
+    @keyframes peekSleep {
+      0%, 100% { transform: translateY(-50%) translateX(0px); }
+      50% { transform: translateY(-47%) translateX(8px); }
     }
-    @keyframes vibeBop {
-      0%, 100% { transform: translateY(0px) scale(1); }
-      50% { transform: translateY(-12px) scale(1.03); }
+    @keyframes peekVibe {
+      0%, 100% { transform: translateY(-50%) rotate(0deg); }
+      50% { transform: translateY(-53%) rotate(2deg); }
     }
-    @keyframes workoutPump {
-      0%, 100% { transform: translateY(0) scale(1); }
-      50% { transform: translateY(-18px) scale(1.08) rotate(3deg); }
+    @keyframes peekPump {
+      0%, 100% { transform: translateY(-50%) scale(1); }
+      50% { transform: translateY(-54%) scale(1.04) rotate(-2deg); }
     }
-    @keyframes concernedShake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-6px) rotate(-2deg); }
-      75% { transform: translateX(6px) rotate(2deg); }
+    @keyframes peekConcern {
+      0%, 100% { transform: translateY(-50%) translateX(0); }
+      25% { transform: translateY(-50%) translateX(-4px) rotate(-1deg); }
+      75% { transform: translateY(-50%) translateX(4px) rotate(1deg); }
     }
 
     /* FRONT DASHBOARD CARD LAYER */
     .dashboard-card {
       position: relative;
-      z-index: 10; /* Front Layer */
+      z-index: 10; /* Front layer covering body of avatar */
       background: var(--card-bg);
       border: 1px solid var(--accent-color);
       border-radius: 20px;
-      width: 90%;
-      max-width: 750px;
+      width: 100%;
       padding: 32px;
       backdrop-filter: blur(14px);
       display: flex;
       flex-direction: column;
       gap: 20px;
       transition: all 0.8s ease;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      box-shadow: 0 10px 35px rgba(0,0,0,0.85);
     }
 
     .header-bar {
@@ -303,102 +309,119 @@ HTML_TEMPLATE = """
 </head>
 <body>
 
-<!-- MID-LAYER AVATAR BACKGROUND -->
-<div class="avatar-layer avatar-sleeping" id="avatar-container">
-  <svg class="avatar-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-    <!-- Aura Glow Background -->
-    <circle cx="100" cy="100" r="80" fill="var(--accent-color)" opacity="0.15" />
-    
-    <!-- Hair Base -->
-    <path d="M 50 110 C 45 40, 155 40, 150 110 C 160 80, 140 30, 100 30 C 60 30, 40 80, 50 110 Z" fill="#334155" />
-    
-    <!-- Face Contour -->
-    <ellipse cx="100" cy="105" rx="42" ry="46" fill="#fde047" opacity="0.95" />
-    
-    <!-- Dynamic Hair Bangs -->
-    <path d="M 60 75 Q 100 95 140 75 Q 100 60 60 75 Z" fill="#1e293b" />
-    
-    <!-- Dynamic Eyes Layer -->
-    <g id="avatar-eyes">
-      <!-- Default Sleeping Eyes Zzz -->
-      <path d="M 75 102 Q 85 108 90 102" stroke="#0f172a" stroke-width="3" fill="none" stroke-linecap="round"/>
-      <path d="M 110 102 Q 115 108 125 102" stroke="#0f172a" stroke-width="3" fill="none" stroke-linecap="round"/>
-    </g>
+<div class="app-wrapper">
 
-    <!-- Dynamic Mouth Layer -->
-    <g id="avatar-mouth">
-      <!-- Calm Sleeping Mouth -->
-      <path d="M 92 125 Q 100 128 108 125" stroke="#0f172a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    </g>
+  <!-- SIDE-PEEKING FEMALE AVATAR LAYER -->
+  <div class="avatar-layer avatar-sleeping" id="avatar-container">
+    <svg class="avatar-svg" viewBox="0 0 250 350" xmlns="http://www.w3.org/2000/svg">
+      <!-- Glow aura background -->
+      <circle cx="110" cy="160" r="90" fill="var(--accent-color)" opacity="0.18" />
+      
+      <!-- Long Hair (Back Layer) -->
+      <path d="M 40 100 C 20 180, 25 280, 90 320 C 130 310, 160 250, 150 140 C 140 60, 60 50, 40 100 Z" fill="#2d1b4e" />
 
-    <!-- Dynamic Accessories / Mood Indicators (Zzz, Sweat, Sweatband, Alert) -->
-    <g id="avatar-extras">
-      <!-- Floating Zzz for sleeping state -->
-      <text x="135" y="65" fill="var(--accent-color)" font-size="16" font-weight="bold" opacity="0.8">Z</text>
-      <text x="148" y="50" fill="var(--accent-color)" font-size="12" font-weight="bold" opacity="0.6">z</text>
-    </g>
-  </svg>
-</div>
+      <!-- Body / Shoulder peeking -->
+      <path d="M 30 220 Q 80 210 130 250 L 130 350 L 10 350 Z" fill="#1e1b4b" />
+      
+      <!-- Face Base (Tilted head peeking out) -->
+      <path d="M 35 120 C 35 70, 125 70, 125 120 C 125 175, 80 200, 45 185 C 35 170, 35 140, 35 120 Z" fill="#ffdfc4" />
+      
+      <!-- Soft Cheek Blush -->
+      <ellipse cx="60" cy="155" rx="10" ry="6" fill="#f43f5e" opacity="0.3" />
+      <ellipse cx="105" cy="155" rx="10" ry="6" fill="#f43f5e" opacity="0.3" />
 
-<!-- FRONT DASHBOARD CARD LAYER -->
-<div class="dashboard-card" id="main-card">
-  
-  <div class="header-bar">
-    <span>ESP32 SENSOR: <span id="esp-status-badge" class="status-badge status-offline">WAITING FOR ESP32</span></span>
-    <div>
-      <span style="color: var(--text-muted); margin-right: 8px;">INPUT MODE:</span>
-      <select class="mode-select-header" id="input-mode-select" onchange="toggleInputMode()">
-        <option value="esp32" selected>ESP32 Hardware Stream</option>
-        <option value="manual">Manual BPM Input</option>
-      </select>
-    </div>
+      <!-- Front Hair / Bangs -->
+      <path d="M 35 110 Q 75 130 120 95 C 100 65, 55 65, 35 110 Z" fill="#3b0764" />
+      <path d="M 30 115 C 20 160, 35 230, 50 260 C 58 230, 45 160, 42 125 Z" fill="#3b0764" />
+
+      <!-- Dynamic Eyes Layer -->
+      <g id="avatar-eyes">
+        <!-- Default Sleeping Eyes -->
+        <path d="M 52 138 Q 62 144 72 138" stroke="#1e293b" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M 92 138 Q 102 144 112 138" stroke="#1e293b" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </g>
+
+      <!-- Dynamic Mouth Layer -->
+      <g id="avatar-mouth">
+        <!-- Calm Sleeping Smile -->
+        <path d="M 76 168 Q 82 172 88 168" stroke="#be123c" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </g>
+
+      <!-- Dynamic Extras (Headphones, Sweatband, Expressions, Hands Peeking) -->
+      <g id="avatar-extras">
+        <!-- Floating Zzz for relaxed/sleeping state -->
+        <text x="125" y="90" fill="var(--accent-color)" font-size="18" font-weight="bold" opacity="0.8">Z</text>
+        <text x="140" y="72" fill="var(--accent-color)" font-size="13" font-weight="bold" opacity="0.6">z</text>
+      </g>
+
+      <!-- Peeking Hands gripping edge of front card -->
+      <g id="avatar-hands">
+        <rect x="8" y="170" width="14" height="24" rx="7" fill="#ffdfc4" stroke="#e2e8f0" stroke-width="1.5"/>
+        <rect x="8" y="200" width="14" height="24" rx="7" fill="#ffdfc4" stroke="#e2e8f0" stroke-width="1.5"/>
+      </g>
+    </svg>
   </div>
 
-  <div class="bpm-container">
-    <div style="font-size: 12px; color: var(--text-muted); font-weight: bold; letter-spacing: 1.5px;">BIOMETRIC STREAM</div>
-    <div class="bpm-value" id="bpm-val"><span class="bpm-waiting">Touch ESP32 Sensor...</span></div>
+  <!-- FRONT DASHBOARD CARD LAYER -->
+  <div class="dashboard-card" id="main-card">
     
-    <div id="manual-input-container" style="display: none; margin-top: 10px;">
-      <input type="number" id="manual-bpm-field" placeholder="Enter BPM (e.g. 75)" min="30" max="250" oninput="updateAnalysis()" style="width: 200px; text-align: center;">
+    <div class="header-bar">
+      <span>ESP32 SENSOR: <span id="esp-status-badge" class="status-badge status-offline">WAITING FOR ESP32</span></span>
+      <div>
+        <span style="color: var(--text-muted); margin-right: 8px;">INPUT MODE:</span>
+        <select class="mode-select-header" id="input-mode-select" onchange="toggleInputMode()">
+          <option value="esp32" selected>ESP32 Hardware Stream</option>
+          <option value="manual">Manual BPM Input</option>
+        </select>
+      </div>
     </div>
 
-    <canvas id="ecgCanvas" width="600" height="60"></canvas>
+    <div class="bpm-container">
+      <div style="font-size: 12px; color: var(--text-muted); font-weight: bold; letter-spacing: 1.5px;">BIOMETRIC STREAM</div>
+      <div class="bpm-value" id="bpm-val"><span class="bpm-waiting">Touch ESP32 Sensor...</span></div>
+      
+      <div id="manual-input-container" style="display: none; margin-top: 10px;">
+        <input type="number" id="manual-bpm-field" placeholder="Enter BPM (e.g. 75)" min="30" max="250" oninput="updateAnalysis()" style="width: 200px; text-align: center;">
+      </div>
+
+      <canvas id="ecgCanvas" width="600" height="60"></canvas>
+    </div>
+
+    <div class="info-panel">
+      <div class="info-box">
+        <span class="info-title">DETECTED MOOD STATE</span>
+        <span class="info-value" id="detected-mood">Waiting for Data...</span>
+      </div>
+      <div class="info-box">
+        <span class="info-title">RECOMMENDED GENRE</span>
+        <span class="info-value" id="suggested-genre">Waiting for Selection...</span>
+      </div>
+    </div>
+
+    <div class="controls-grid">
+      <div class="form-group">
+        <label for="lang-select">SELECT MUSIC LANGUAGE</label>
+        <select id="lang-select" onchange="updateAnalysis()">
+          <option value="Tamil">Tamil</option>
+          <option value="International">International</option>
+          <option value="Hindi">Hindi</option>
+          <option value="Telugu">Telugu</option>
+          <option value="Malayalam">Malayalam</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="target-mode">BIOMATCH TARGET MODE</label>
+        <select id="target-mode" onchange="updateAnalysis()">
+          <option value="maintain">Maintain My Mood</option>
+          <option value="change">Change My Mood</option>
+        </select>
+      </div>
+
+      <button id="rec-btn" class="btn-submit btn-disabled" onclick="handleRecommendationClick()" disabled>Waiting for Valid Input...</button>
+    </div>
+
   </div>
-
-  <div class="info-panel">
-    <div class="info-box">
-      <span class="info-title">DETECTED MOOD STATE</span>
-      <span class="info-value" id="detected-mood">Waiting for Data...</span>
-    </div>
-    <div class="info-box">
-      <span class="info-title">RECOMMENDED GENRE</span>
-      <span class="info-value" id="suggested-genre">Waiting for Selection...</span>
-    </div>
-  </div>
-
-  <div class="controls-grid">
-    <div class="form-group">
-      <label for="lang-select">SELECT MUSIC LANGUAGE</label>
-      <select id="lang-select" onchange="updateAnalysis()">
-        <option value="Tamil">Tamil</option>
-        <option value="International">International</option>
-        <option value="Hindi">Hindi</option>
-        <option value="Telugu">Telugu</option>
-        <option value="Malayalam">Malayalam</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label for="target-mode">BIOMATCH TARGET MODE</label>
-      <select id="target-mode" onchange="updateAnalysis()">
-        <option value="maintain">Maintain My Mood</option>
-        <option value="change">Change My Mood</option>
-      </select>
-    </div>
-
-    <button id="rec-btn" class="btn-submit btn-disabled" onclick="handleRecommendationClick()" disabled>Waiting for Valid Input...</button>
-  </div>
-
 </div>
 
 <!-- High BPM Option Selection Modal (83 - 170 BPM) -->
@@ -559,47 +582,54 @@ HTML_TEMPLATE = """
     avatarContainer.className = "avatar-layer avatar-" + moodState;
 
     if (moodState === "sleeping") {
+      // Resting Sleeping Eye Arcs & Soft Smile
       eyesGroup.innerHTML = `
-        <path d="M 75 102 Q 85 108 90 102" stroke="#0f172a" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <path d="M 110 102 Q 115 108 125 102" stroke="#0f172a" stroke-width="3" fill="none" stroke-linecap="round"/>`;
-      mouthGroup.innerHTML = `<path d="M 92 125 Q 100 128 108 125" stroke="#0f172a" stroke-width="2.5" fill="none" stroke-linecap="round"/>`;
+        <path d="M 52 138 Q 62 144 72 138" stroke="#1e293b" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M 92 138 Q 102 144 112 138" stroke="#1e293b" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+      mouthGroup.innerHTML = `<path d="M 76 168 Q 82 172 88 168" stroke="#be123c" stroke-width="2.5" fill="none" stroke-linecap="round"/>`;
       extrasGroup.innerHTML = `
-        <text x="135" y="65" fill="var(--accent-color)" font-size="16" font-weight="bold" opacity="0.8">Z</text>
-        <text x="148" y="50" fill="var(--accent-color)" font-size="12" font-weight="bold" opacity="0.6">z</text>`;
+        <text x="125" y="90" fill="var(--accent-color)" font-size="18" font-weight="bold" opacity="0.8">Z</text>
+        <text x="140" y="72" fill="var(--accent-color)" font-size="13" font-weight="bold" opacity="0.6">z</text>`;
     } else if (moodState === "vibe") {
+      // Big Happy Anime Eyes & Glowing Headphones
       eyesGroup.innerHTML = `
-        <circle cx="82" cy="100" r="5" fill="#0f172a" />
-        <circle cx="118" cy="100" r="5" fill="#0f172a" />`;
-      mouthGroup.innerHTML = `<path d="M 88 118 Q 100 132 112 118" stroke="#0f172a" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+        <ellipse cx="62" cy="136" rx="6" ry="7" fill="#0f172a" />
+        <circle cx="64" cy="134" r="2" fill="#ffffff" />
+        <ellipse cx="102" cy="136" rx="6" ry="7" fill="#0f172a" />
+        <circle cx="104" cy="134" r="2" fill="#ffffff" />`;
+      mouthGroup.innerHTML = `<path d="M 74 164 Q 82 176 90 164" stroke="#be123c" stroke-width="3" fill="none" stroke-linecap="round"/>`;
       extrasGroup.innerHTML = `
         <!-- Headphones -->
-        <path d="M 52 100 C 52 50, 148 50, 148 100" stroke="var(--accent-color)" stroke-width="6" fill="none"/>
-        <rect x="44" y="90" width="12" height="24" rx="5" fill="var(--accent-color)"/>
-        <rect x="144" y="90" width="12" height="24" rx="5" fill="var(--accent-color)"/>`;
+        <path d="M 32 130 C 30 70, 128 70, 126 130" stroke="var(--accent-color)" stroke-width="7" fill="none"/>
+        <rect x="22" y="118" width="14" height="28" rx="6" fill="var(--accent-color)"/>
+        <rect x="122" y="118" width="14" height="28" rx="6" fill="var(--accent-color)"/>`;
     } else if (moodState === "pumped") {
+      // Energetic Expression, Sweatband & Sweat Drop
       eyesGroup.innerHTML = `
-        <path d="M 75 96 L 90 102" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round"/>
-        <path d="M 125 96 L 110 102" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round"/>
-        <circle cx="83" cy="103" r="4" fill="#0f172a" />
-        <circle cx="117" cy="103" r="4" fill="#0f172a" />`;
-      mouthGroup.innerHTML = `<ellipse cx="100" cy="122" rx="10" ry="6" fill="#0f172a" />`;
+        <path d="M 54 130 L 68 136" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M 110 130 L 96 136" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="63" cy="138" r="4.5" fill="#0f172a" />
+        <circle cx="99" cy="138" r="4.5" fill="#0f172a" />`;
+      mouthGroup.innerHTML = `<ellipse cx="82" cy="166" rx="8" ry="5" fill="#be123c" />`;
       extrasGroup.innerHTML = `
-        <!-- Sweatband & Workout Drops -->
-        <rect x="58" y="76" width="84" height="10" rx="4" fill="var(--accent-color)" />
-        <path d="M 146 100 Q 150 108 146 112 Q 142 108 146 100" fill="#38bdf8" />`;
+        <!-- Sports Headband -->
+        <path d="M 34 105 Q 80 115 124 100 L 122 114 Q 80 126 34 116 Z" fill="var(--accent-color)" />
+        <!-- Sweat Drop -->
+        <path d="M 122 138 Q 126 146 122 150 Q 118 146 122 138" fill="#38bdf8" />`;
     } else if (moodState === "concerned") {
+      // Worried Eyes, Frown & Alert Symbols
       eyesGroup.innerHTML = `
-        <circle cx="80" cy="98" r="8" fill="#none" stroke="#0f172a" stroke-width="2.5"/>
-        <circle cx="80" cy="98" r="3" fill="#0f172a"/>
-        <circle cx="120" cy="98" r="8" fill="#none" stroke="#0f172a" stroke-width="2.5"/>
-        <circle cx="120" cy="98" r="3" fill="#0f172a"/>
-        <path d="M 72 86 L 88 92" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
-        <path d="M 128 86 L 112 92" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>`;
-      mouthGroup.innerHTML = `<path d="M 90 126 Q 100 116 110 126" stroke="#0f172a" stroke-width="3.5" fill="none" stroke-linecap="round"/>`;
+        <circle cx="60" cy="135" r="7" fill="none" stroke="#0f172a" stroke-width="2.5"/>
+        <circle cx="60" cy="135" r="2.5" fill="#0f172a"/>
+        <circle cx="102" cy="135" r="7" fill="none" stroke="#0f172a" stroke-width="2.5"/>
+        <circle cx="102" cy="135" r="2.5" fill="#0f172a"/>
+        <path d="M 52 122 L 68 127" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+        <path d="M 110 122 L 94 127" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>`;
+      mouthGroup.innerHTML = `<path d="M 74 170 Q 82 160 90 170" stroke="#be123c" stroke-width="3.5" fill="none" stroke-linecap="round"/>`;
       extrasGroup.innerHTML = `
         <!-- Alert Signs -->
-        <text x="145" y="75" fill="#ef4444" font-size="22" font-weight="900">!</text>
-        <text x="48" y="75" fill="#ef4444" font-size="22" font-weight="900">!</text>`;
+        <text x="130" y="110" fill="#ef4444" font-size="24" font-weight="900">!</text>
+        <text x="25" y="110" fill="#ef4444" font-size="24" font-weight="900">!</text>`;
     }
   }
 
@@ -612,9 +642,8 @@ HTML_TEMPLATE = """
     const genreEl = document.getElementById('suggested-genre');
     const recBtn = document.getElementById('rec-btn');
 
-    // Default state pre-input: Sleeping pose with black aesthetic
     if (!bpm || bpm <= 0) {
-      applyDynamicTheme("#000000", "#000000", "#050505", "#38bdf8", "rgba(255, 255, 255, 0.08)", "#64748b");
+      applyDynamicTheme("#030712", "#090d16", "#030712", "#38bdf8", "rgba(56, 189, 248, 0.15)", "#64748b");
       setAvatarMood("sleeping");
       moodEl.innerText = "Waiting for Data...";
       genreEl.innerText = "Waiting for Selection...";
@@ -629,37 +658,30 @@ HTML_TEMPLATE = """
     recBtn.className = "btn-submit";
     recBtn.innerText = "Open YouTube Music Recommendation →";
 
-    // Dynamic Avatar Mood & Color State Machine
     if (bpm < 55) {
-      // Low BPM Alert (Purple Concerned Avatar)
       applyDynamicTheme("#140924", "#1b0c30", "#0e061a", "#c084fc", "rgba(192, 132, 252, 0.45)", "#e9d5ff");
       setAvatarMood("concerned");
       moodEl.innerText = "Critically Low BPM (< 55)";
       genreEl.innerText = "Seek Medical Attention";
     } else if (bpm >= 55 && bpm <= 66) {
-      // Relaxed Sleeping / Calm Avatar (Deep Blue)
       applyDynamicTheme("#051329", "#081d3d", "#030e21", "#38bdf8", "rgba(56, 189, 248, 0.4)", "#93c5fd");
       setAvatarMood("sleeping");
       moodEl.innerText = "Relaxed / Peaceful (55-66 BPM)";
     } else if (bpm >= 67 && bpm <= 82) {
-      // Normal Vibe Avatar with Headphones (Green)
       applyDynamicTheme("#031c14", "#062b1f", "#02120d", "#22c55e", "rgba(34, 197, 94, 0.4)", "#86efac");
       setAvatarMood("vibe");
       moodEl.innerText = "Calm Baseline / Normal Vibe";
     } else if (bpm >= 83 && bpm <= 170) {
-      // High BPM Workout / Pumped Avatar (Orange)
       applyDynamicTheme("#240909", "#360e0e", "#190505", "#f97316", "rgba(249, 115, 22, 0.45)", "#fdba74");
       setAvatarMood("pumped");
       moodEl.innerText = "High Energy / Excited / Stressed";
     } else if (bpm > 170 && bpm <= 200) {
-      // Extreme High BPM Concerned Avatar (Red)
       applyDynamicTheme("#330505", "#4a0808", "#240303", "#ef4444", "rgba(239, 68, 68, 0.5)", "#fca5a5");
       setAvatarMood("concerned");
       moodEl.innerText = "BPM Too High (171-200 BPM)";
       genreEl.innerText = "Rest & Soothing Melody";
       return;
     } else {
-      // Critical Medical Emergency Avatar (Crimson Red)
       applyDynamicTheme("#450000", "#5e0000", "#300000", "#dc2626", "rgba(220, 38, 38, 0.75)", "#fecaca");
       setAvatarMood("concerned");
       moodEl.innerText = "DANGER: BPM > 200";
