@@ -45,66 +45,20 @@ HTML_TEMPLATE = """
       align-items: center;
       min-height: 100vh;
       margin: 0;
-      overflow: hidden;
+      overflow-x: hidden;
       position: relative;
       transition: background-color 0.8s ease;
       animation: bgPulseGlow 2.5s infinite ease-in-out;
     }
 
-    .app-wrapper {
-      position: relative;
-      width: 90%;
-      max-width: 750px;
-      margin-top: 80px; /* Space for top-peeking avatar */
-    }
-
-    /* 2D FEMALE AVATAR (PEEKING OVER THE TOP-RIGHT EDGE) */
-    .avatar-layer {
-      position: absolute;
-      top: -140px; /* Positions head and shoulders clearly above the top border */
-      right: 30px;
-      z-index: 15; /* Sits above the background frame so she is 100% visible */
-      pointer-events: none;
-      transition: all 0.5s ease;
-    }
-
-    .avatar-svg {
-      width: 200px;
-      height: 180px;
-      filter: drop-shadow(0 0 12px var(--accent-color));
-      transition: filter 0.8s ease;
-    }
-
-    /* Peeking Animations */
-    .avatar-sleeping {
-      animation: peekFloatSleep 3.5s infinite ease-in-out;
-    }
-    .avatar-vibe {
-      animation: peekBopVibe 1.1s infinite ease-in-out;
-    }
-    .avatar-pumped {
-      animation: peekWorkoutPump 0.5s infinite ease-in-out;
-    }
-    .avatar-concerned {
-      animation: peekAlertShake 0.3s infinite ease-in-out;
-    }
-
-    @keyframes peekFloatSleep {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(6px); }
-    }
-    @keyframes peekBopVibe {
-      0%, 100% { transform: translateY(0px) rotate(0deg); }
-      50% { transform: translateY(-10px) rotate(2deg); }
-    }
-    @keyframes peekWorkoutPump {
-      0%, 100% { transform: translateY(0px) scale(1); }
-      50% { transform: translateY(-12px) scale(1.05) rotate(-2deg); }
-    }
-    @keyframes peekAlertShake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-5px) rotate(-1deg); }
-      75% { transform: translateX(5px) rotate(1deg); }
+    .main-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      width: 95%;
+      max-width: 1100px;
+      margin: 20px auto;
     }
 
     .dashboard-card {
@@ -113,7 +67,8 @@ HTML_TEMPLATE = """
       background: var(--card-bg);
       border: 1px solid var(--accent-color);
       border-radius: 20px;
-      width: 100%;
+      flex: 1;
+      max-width: 700px;
       padding: 32px;
       backdrop-filter: blur(14px);
       display: flex;
@@ -121,6 +76,45 @@ HTML_TEMPLATE = """
       gap: 20px;
       transition: all 0.8s ease;
       box-shadow: 0 10px 35px rgba(0,0,0,0.85);
+    }
+
+    /* KURISU VISUAL NOVEL SPRITE LAYER */
+    .sprite-wrapper {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      height: 580px;
+      width: 320px;
+      pointer-events: none;
+    }
+
+    .kurisu-sprite {
+      height: 100%;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 0 15px var(--glow-color));
+      transition: filter 0.8s ease, transform 0.3s ease;
+    }
+
+    /* Ambient Sprite Animations */
+    .sprite-sleeping { transform: translateY(10px); opacity: 0.85; }
+    .sprite-vibe { animation: gentleFloat 3s infinite ease-in-out; }
+    .sprite-pumped { animation: eagerBounce 0.6s infinite ease-in-out; }
+    .sprite-concerned { animation: worryTremor 0.25s infinite ease-in-out; }
+
+    @keyframes gentleFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+    @keyframes eagerBounce {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-10px) scale(1.02); }
+    }
+    @keyframes worryTremor {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-3px); }
+      75% { transform: translateX(3px); }
     }
 
     .header-bar {
@@ -261,87 +255,15 @@ HTML_TEMPLATE = """
       border: none !important;
     }
 
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.9);
-      justify-content: center;
-      align-items: center;
-      z-index: 100;
-    }
-
-    .modal-content {
-      background: #090d16;
-      border: 2px solid #ef4444;
-      border-radius: 16px;
-      padding: 24px;
-      max-width: 400px;
-      text-align: center;
-    }
-
-    .modal-btn {
-      width: 100%;
-      margin-top: 12px;
-      padding: 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      background: #111827;
-      color: #ffffff;
-      border: 1px solid #ef4444;
-      font-weight: bold;
-    }
-
-    .modal-btn:hover {
-      background: #ef4444;
-      color: #ffffff;
+    @media (max-width: 900px) {
+      .main-container { flex-direction: column; }
+      .sprite-wrapper { height: 350px; width: 100%; }
     }
   </style>
 </head>
 <body>
 
-<div class="app-wrapper">
-
-  <!-- 2D FEMALE AVATAR (TOP-RIGHT PEEKING) -->
-  <div class="avatar-layer avatar-sleeping" id="avatar-container">
-    <svg class="avatar-svg" viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
-      <!-- Back Hair -->
-      <path d="M 30 70 C 20 120, 30 170, 70 170 C 130 170, 170 120, 160 70 C 150 20, 40 20, 30 70 Z" fill="#4c1d95" />
-
-      <!-- Head & Face Base -->
-      <ellipse cx="95" cy="85" rx="42" ry="40" fill="#fde047" />
-      
-      <!-- Cheeks Blush -->
-      <ellipse cx="70" cy="96" rx="8" ry="4" fill="#f43f5e" opacity="0.4" />
-      <ellipse cx="120" cy="96" rx="8" ry="4" fill="#f43f5e" opacity="0.4" />
-
-      <!-- Hair Bangs -->
-      <path d="M 53 65 Q 95 85 137 65 C 120 40, 70 40, 53 65 Z" fill="#3b0764" />
-
-      <!-- Dynamic Eyes -->
-      <g id="avatar-eyes">
-        <path d="M 72 84 Q 80 90 88 84" stroke="#0f172a" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <path d="M 102 84 Q 110 90 118 84" stroke="#0f172a" stroke-width="3" fill="none" stroke-linecap="round"/>
-      </g>
-
-      <!-- Dynamic Mouth -->
-      <g id="avatar-mouth">
-        <path d="M 90 106 Q 95 110 100 106" stroke="#9f1239" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-      </g>
-
-      <!-- Dynamic Mood Props -->
-      <g id="avatar-extras">
-        <text x="135" y="45" fill="var(--accent-color)" font-size="16" font-weight="bold" opacity="0.8">Z</text>
-        <text x="148" y="32" fill="var(--accent-color)" font-size="12" font-weight="bold" opacity="0.6">z</text>
-      </g>
-
-      <!-- Hands Peeking on Top Edge of Dashboard Panel -->
-      <g id="avatar-hands">
-        <ellipse cx="68" cy="138" rx="14" ry="9" fill="#fde047" stroke="#3b0764" stroke-width="2" />
-        <ellipse cx="122" cy="138" rx="14" ry="9" fill="#fde047" stroke="#3b0764" stroke-width="2" />
-      </g>
-    </svg>
-  </div>
+<div class="main-container">
 
   <!-- DASHBOARD CARD -->
   <div class="dashboard-card" id="main-card">
@@ -403,45 +325,12 @@ HTML_TEMPLATE = """
     </div>
 
   </div>
-</div>
 
-<!-- High BPM Option Selection Modal (83 - 170 BPM) -->
-<div class="modal-overlay" id="highBpmModal">
-  <div class="modal-content" style="border-color: #ef4444;">
-    <h3 style="margin-top:0; color:#ef4444;">High BPM Detected!</h3>
-    <p style="font-size:14px; color:#94a3b8;">You selected <b>Maintain My Mood</b> with an elevated heart rate. Which vibe do you prefer?</p>
-    <button class="modal-btn" style="border-color:#38bdf8;" onclick="triggerSearch('motivational')">🔥 Motivational, Gym & Pump-up</button>
-    <button class="modal-btn" style="border-color:#38bdf8;" onclick="triggerSearch('breakup')">💔 Breakup & Soup Songs</button>
+  <!-- MAKISE KURISU VISUAL NOVEL SPRITE DISPLAY -->
+  <div class="sprite-wrapper">
+    <img id="kurisu-img" class="kurisu-sprite sprite-vibe" src="https://static.wikia.nocookie.net/steins-gate/images/5/5c/Makise_Kurisu_Sprite_Neutral.png" alt="Makise Kurisu Sprite" />
   </div>
-</div>
 
-<!-- Low BPM Warning Modal (< 55 BPM) -->
-<div class="modal-overlay" id="lowBpmWarningModal">
-  <div class="modal-content" style="border-color: #a855f7;">
-    <h2 style="margin-top:0; color:#a855f7;">⚠️ ALERT</h2>
-    <p style="font-size:18px; color:#ffffff; font-weight:bold;">BPM is critically low (< 55 BPM).</p>
-    <p style="font-size:15px; color:#c084fc;">Seek Medical Attention!</p>
-    <button class="modal-btn" style="border-color: #a855f7;" onclick="closeModal('lowBpmWarningModal')">Acknowledge & Dismiss</button>
-  </div>
-</div>
-
-<!-- High Rest Warning Modal (171 - 200 BPM) -->
-<div class="modal-overlay" id="extremeBpmWarningModal">
-  <div class="modal-content" style="border-color: #ef4444;">
-    <h2 style="margin-top:0; color:#ef4444;">⚠️ BPM TOO HIGH</h2>
-    <p style="font-size:16px; color:#ffffff; font-weight:bold;">Your heart rate is high (171-200 BPM). Please take rest!</p>
-    <button class="modal-btn" style="border-color: #ef4444;" onclick="playMelodyAndClose()">Relax with Calming Melody →</button>
-  </div>
-</div>
-
-<!-- Critical Medical Help Emergency Modal (> 200 BPM) -->
-<div class="modal-overlay" id="criticalMedicalModal">
-  <div class="modal-content" style="border-color: #dc2626; background: #1a0303;">
-    <h1 style="margin-top:0; color:#dc2626;">🚨 CRITICAL ALERT</h1>
-    <p style="font-size:18px; color:#ffffff; font-weight:bold;">BPM EXCEEDS 200!</p>
-    <p style="font-size:16px; color:#f87171; font-weight:bold;">Seek Medical Help!</p>
-    <button class="modal-btn" style="border-color: #dc2626; background: #dc2626; color: white;" onclick="closeModal('criticalMedicalModal')">Acknowledge Emergency</button>
-  </div>
 </div>
 
 <script>
@@ -554,56 +443,9 @@ HTML_TEMPLATE = """
     }
   }
 
-  function setAvatarMood(moodState) {
-    const avatarContainer = document.getElementById('avatar-container');
-    const eyesGroup = document.getElementById('avatar-eyes');
-    const mouthGroup = document.getElementById('avatar-mouth');
-    const extrasGroup = document.getElementById('avatar-extras');
-
-    avatarContainer.className = "avatar-layer avatar-" + moodState;
-
-    if (moodState === "sleeping") {
-      eyesGroup.innerHTML = `
-        <path d="M 72 84 Q 80 90 88 84" stroke="#0f172a" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <path d="M 102 84 Q 110 90 118 84" stroke="#0f172a" stroke-width="3" fill="none" stroke-linecap="round"/>`;
-      mouthGroup.innerHTML = `<path d="M 90 106 Q 95 110 100 106" stroke="#9f1239" stroke-width="2.5" fill="none" stroke-linecap="round"/>`;
-      extrasGroup.innerHTML = `
-        <text x="135" y="45" fill="var(--accent-color)" font-size="16" font-weight="bold" opacity="0.8">Z</text>
-        <text x="148" y="32" fill="var(--accent-color)" font-size="12" font-weight="bold" opacity="0.6">z</text>`;
-    } else if (moodState === "vibe") {
-      eyesGroup.innerHTML = `
-        <circle cx="80" cy="83" r="5" fill="#0f172a" />
-        <circle cx="82" cy="81" r="1.5" fill="#ffffff" />
-        <circle cx="110" cy="83" r="5" fill="#0f172a" />
-        <circle cx="112" cy="81" r="1.5" fill="#ffffff" />`;
-      mouthGroup.innerHTML = `<path d="M 88 102 Q 95 112 102 102" stroke="#9f1239" stroke-width="3" fill="none" stroke-linecap="round"/>`;
-      extrasGroup.innerHTML = `
-        <path d="M 48 80 C 46 30, 144 30, 142 80" stroke="var(--accent-color)" stroke-width="6" fill="none"/>
-        <rect x="40" y="70" width="12" height="24" rx="5" fill="var(--accent-color)"/>
-        <rect x="138" y="70" width="12" height="24" rx="5" fill="var(--accent-color)"/>`;
-    } else if (moodState === "pumped") {
-      eyesGroup.innerHTML = `
-        <path d="M 72 78 L 86 84" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
-        <path d="M 118 78 L 104 84" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
-        <circle cx="81" cy="85" r="4" fill="#0f172a" />
-        <circle cx="109" cy="85" r="4" fill="#0f172a" />`;
-      mouthGroup.innerHTML = `<ellipse cx="95" cy="105" rx="7" ry="4" fill="#9f1239" />`;
-      extrasGroup.innerHTML = `
-        <rect x="53" y="60" width="84" height="10" rx="4" fill="var(--accent-color)" />
-        <path d="M 134 85 Q 138 92 134 95 Q 130 92 134 85" fill="#38bdf8" />`;
-    } else if (moodState === "concerned") {
-      eyesGroup.innerHTML = `
-        <circle cx="78" cy="82" r="6" fill="none" stroke="#0f172a" stroke-width="2.5"/>
-        <circle cx="78" cy="82" r="2" fill="#0f172a"/>
-        <circle cx="112" cy="82" r="6" fill="none" stroke="#0f172a" stroke-width="2.5"/>
-        <circle cx="112" cy="82" r="2" fill="#0f172a"/>
-        <path d="M 70 73 L 84 77" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>
-        <path d="M 120 73 L 106 77" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>`;
-      mouthGroup.innerHTML = `<path d="M 88 108 Q 95 100 102 108" stroke="#9f1239" stroke-width="3" fill="none" stroke-linecap="round"/>`;
-      extrasGroup.innerHTML = `
-        <text x="138" y="60" fill="#ef4444" font-size="20" font-weight="900">!</text>
-        <text x="42" y="60" fill="#ef4444" font-size="20" font-weight="900">!</text>`;
-    }
+  function setSpriteAnimation(animationClass) {
+    const img = document.getElementById('kurisu-img');
+    img.className = "kurisu-sprite " + animationClass;
   }
 
   function updateAnalysis() {
@@ -617,7 +459,7 @@ HTML_TEMPLATE = """
 
     if (!bpm || bpm <= 0) {
       applyDynamicTheme("#030712", "#090d16", "#030712", "#38bdf8", "rgba(56, 189, 248, 0.15)", "#64748b");
-      setAvatarMood("sleeping");
+      setSpriteAnimation("sprite-sleeping");
       moodEl.innerText = "Waiting for Data...";
       genreEl.innerText = "Waiting for Selection...";
       recBtn.disabled = true;
@@ -633,32 +475,26 @@ HTML_TEMPLATE = """
 
     if (bpm < 55) {
       applyDynamicTheme("#140924", "#1b0c30", "#0e061a", "#c084fc", "rgba(192, 132, 252, 0.45)", "#e9d5ff");
-      setAvatarMood("concerned");
+      setSpriteAnimation("sprite-concerned");
       moodEl.innerText = "Critically Low BPM (< 55)";
       genreEl.innerText = "Seek Medical Attention";
     } else if (bpm >= 55 && bpm <= 66) {
       applyDynamicTheme("#051329", "#081d3d", "#030e21", "#38bdf8", "rgba(56, 189, 248, 0.4)", "#93c5fd");
-      setAvatarMood("sleeping");
+      setSpriteAnimation("sprite-vibe");
       moodEl.innerText = "Relaxed / Peaceful (55-66 BPM)";
     } else if (bpm >= 67 && bpm <= 82) {
       applyDynamicTheme("#031c14", "#062b1f", "#02120d", "#22c55e", "rgba(34, 197, 94, 0.4)", "#86efac");
-      setAvatarMood("vibe");
+      setSpriteAnimation("sprite-vibe");
       moodEl.innerText = "Calm Baseline / Normal Vibe";
     } else if (bpm >= 83 && bpm <= 170) {
       applyDynamicTheme("#240909", "#360e0e", "#190505", "#f97316", "rgba(249, 115, 22, 0.45)", "#fdba74");
-      setAvatarMood("pumped");
+      setSpriteAnimation("sprite-pumped");
       moodEl.innerText = "High Energy / Excited / Stressed";
-    } else if (bpm > 170 && bpm <= 200) {
+    } else if (bpm > 170) {
       applyDynamicTheme("#330505", "#4a0808", "#240303", "#ef4444", "rgba(239, 68, 68, 0.5)", "#fca5a5");
-      setAvatarMood("concerned");
-      moodEl.innerText = "BPM Too High (171-200 BPM)";
-      genreEl.innerText = "Rest & Soothing Melody";
-      return;
-    } else {
-      applyDynamicTheme("#450000", "#5e0000", "#300000", "#dc2626", "rgba(220, 38, 38, 0.75)", "#fecaca");
-      setAvatarMood("concerned");
-      moodEl.innerText = "DANGER: BPM > 200";
-      genreEl.innerText = "Seek Medical Help!";
+      setSpriteAnimation("sprite-concerned");
+      moodEl.innerText = "BPM Too High (> 170 BPM)";
+      genreEl.innerText = "Rest & Medical Caution";
       return;
     }
 
@@ -677,66 +513,22 @@ HTML_TEMPLATE = """
   }
 
   function handleRecommendationClick() {
-    const bpm = getActiveBPM();
-    const targetMode = document.getElementById('target-mode').value;
-
-    if (bpm > 200) {
-      document.getElementById('criticalMedicalModal').style.display = 'flex';
-    } else if (bpm < 55) {
-      document.getElementById('lowBpmWarningModal').style.display = 'flex';
-    } else if (bpm > 170 && bpm <= 200) {
-      document.getElementById('extremeBpmWarningModal').style.display = 'flex';
-    } else if (targetMode === "maintain" && bpm >= 83 && bpm <= 170) {
-      document.getElementById('highBpmModal').style.display = 'flex';
-    } else {
-      triggerSearch();
-    }
-  }
-
-  function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
-  }
-
-  function playMelodyAndClose() {
-    closeModal('extremeBpmWarningModal');
-    const lang = document.getElementById('lang-select').value;
-    const query = `${lang} deep relaxation soothing flute instrumental melodies`;
-    window.open(`https://music.youtube.com/search?q=${encodeURIComponent(query)}`, '_blank');
-  }
-
-  function triggerSearch(highBpmChoice = null) {
-    closeModal('highBpmModal');
-
     const lang = document.getElementById('lang-select').value;
     const targetMode = document.getElementById('target-mode').value;
     const bpm = getActiveBPM();
 
-    let query = "";
-
+    let query = `${lang} mood relaxation music`;
     if (targetMode === "maintain") {
-      if (bpm >= 55 && bpm <= 66) {
-        query = `${lang} chill relaxing love romantic songs`;
-      } else if (bpm >= 67 && bpm <= 82) {
-        query = `${lang} normal vibe folk upbeat hits`;
-      } else if (bpm >= 83 && bpm <= 170) {
-        if (highBpmChoice === "breakup") {
-          query = `${lang} breakup soup sad emotional songs`;
-        } else {
-          query = `${lang} motivational gym pump up workout songs`;
-        }
-      }
+      if (bpm >= 55 && bpm <= 66) query = `${lang} chill relaxing love romantic songs`;
+      else if (bpm >= 67 && bpm <= 82) query = `${lang} normal vibe folk upbeat hits`;
+      else if (bpm >= 83 && bpm <= 170) query = `${lang} motivational gym pump up songs`;
     } else {
-      if (bpm >= 55 && bpm <= 66) {
-        query = `${lang} motivational gym pump up workout songs`;
-      } else if (bpm >= 67 && bpm <= 82) {
-        query = `${lang} chill relaxing love romantic songs`;
-      } else if (bpm >= 83 && bpm <= 170) {
-        query = `${lang} deep relaxation calm soothing melodies`;
-      }
+      if (bpm >= 55 && bpm <= 66) query = `${lang} motivational gym pump up workout songs`;
+      else if (bpm >= 67 && bpm <= 82) query = `${lang} chill relaxing love romantic songs`;
+      else if (bpm >= 83 && bpm <= 170) query = `${lang} deep relaxation calm soothing melodies`;
     }
 
-    const ytMusicUrl = `https://music.youtube.com/search?q=${encodeURIComponent(query)}`;
-    window.open(ytMusicUrl, '_blank');
+    window.open(`https://music.youtube.com/search?q=${encodeURIComponent(query)}`, '_blank');
   }
 </script>
 
@@ -751,7 +543,6 @@ def home():
 @app.route('/api/bpm', methods=['GET', 'POST'])
 def handle_bpm():
     global latest_biometrics
-    
     if request.method == 'POST':
         data = request.get_json()
         if data and 'bpm' in data:
@@ -763,7 +554,6 @@ def handle_bpm():
 
     is_active = (time.time() - latest_biometrics['last_seen']) < TIMEOUT_SECONDS
     latest_biometrics['connected'] = is_active
-
     return jsonify(latest_biometrics)
 
 if __name__ == '__main__':
