@@ -360,7 +360,6 @@
       color: #ffffff;
     }
 
-    /* MOBILE MEDIA QUERY */
     @media (max-width: 850px) {
       .main-container {
         flex-direction: column;
@@ -399,6 +398,7 @@
 
 <div class="main-container">
 
+  <!-- DASHBOARD CARD -->
   <div class="dashboard-card" id="main-card">
     
     <div class="header-bar">
@@ -415,10 +415,12 @@
     <div class="bpm-container">
       <div style="font-size: 11px; color: var(--text-muted); font-weight: bold; letter-spacing: 1.5px;">BIOMETRIC STREAM</div>
       
+      <!-- ESP32 DISPLAY -->
       <div class="bpm-value" id="bpm-val-esp" style="display: none;">
         <span class="bpm-waiting">Touch ESP32 Sensor...</span>
       </div>
       
+      <!-- MANUAL INPUT DISPLAY -->
       <div class="manual-bpm-box" id="manual-input-container">
         <label for="manual-bpm-field">ENTER BPM:</label>
         <input type="number" id="manual-bpm-field" placeholder="e.g. 75" min="30" max="250" oninput="updateAnalysis()" value="75">
@@ -466,6 +468,7 @@
 
   </div>
 
+  <!-- CYBER FEMALE AI CANVAS AVATAR -->
   <div class="avatar-wrapper">
     <div class="avatar-dialog-box" id="kurisu-dialog">"Waiting for biometric pulse..."</div>
     <canvas id="kurisuCanvas" width="340" height="440"></canvas>
@@ -473,13 +476,14 @@
 
 </div>
 
+<!-- POPUP MODAL -->
 <div class="modal-overlay" id="quote-modal">
   <div class="modal-card">
     <div style="font-size: 11px; color: var(--text-muted); font-weight: bold; letter-spacing: 1px;">🧠 AI NEURAL ADVICE</div>
     <div class="modal-quote" id="modal-quote-text">Loading quote...</div>
 
     <button class="btn-breakup-toggle" id="breakup-toggle-btn" style="display: none;" onclick="enableBreakupMode()">
-      💔 Feeling Heartbroken? Switch to Breakup Songs
+      💔 Feeling Heartbroken? Switch to Breakup & Soup Songs
     </button>
 
     <button class="btn-modal-proceed" id="modal-proceed-btn" onclick="redirectToYouTube()">
@@ -493,7 +497,6 @@
 </div>
 
 <script>
-  // QUOTE POOLS WITH EMOJIS (10 QUOTES EACH)
   const quotesPool = {
     calm: [
       '🧘‍♂️ "A tranquil mind brings inner strength and self-confidence."',
@@ -532,16 +535,16 @@
       '🌌 "Mastering your breath is the first step to mastering your life."'
     ],
     breakup: [
-      '📲 "You\'re crying over someone who replaced you like a software update? Hit the gym and delete their number! 💪"',
+      '📲 "Crying over someone who replaced you like a software update? Hit the gym and delete their number! 💪"',
       '🥀 "They lost someone who loved them; you lost someone who didn\'t value you. Who really lost? 🤔"',
-      '🗑️ "Stop checking their social media. You\'re inspecting garbage you already threw out."',
-      '📱 "Your heart rate spiked for someone who couldn\'t even reply to a text? Do better! 💅"',
+      '🗑️ "Stop checking their profile. You\'re inspecting garbage you already threw out."',
+      '📱 "Your heart rate spiked for someone who couldn\'t reply to a text? Time for soup songs! 🥣"',
       '🦠 "A breakup is just the universe\'s way of un-installing toxic malware from your life 🚫"',
       '✨ "They aren\'t your soulmate, they were just a life lesson with good lighting 📸"',
-      '🎧 "Upgrade your playlist, upgrade your life, and let them remain a past mistake ✨"',
-      '🏋️ "You missed them? Go do 20 pushups and drink water. You\'re just bored 💧"',
-      '👑 "Why cry over spilled milk when you can build an empire instead? 🏛️"',
-      '💎 "Love is grand, but self-respect is priceless. Wipe your eyes and level up 👑"'
+      '🎧 "Turn up the soup songs, wipe your tears, and upgrade your life ✨"',
+      '🏋️ "Miss them? Go do 20 pushups and listen to breakup hits. You\'re just bored 💧"',
+      '👑 "Why cry over spilled milk when you can listen to soup hits and build an empire? 🏛️"',
+      '💎 "Love is grand, but self-respect is priceless. Level up 👑"'
     ]
   };
 
@@ -554,7 +557,6 @@
   let currentSelectedQuote = "";
   let modalTimer = null;
 
-  // ECG Graph Logic
   const canvas = document.getElementById('ecgCanvas');
   const ctx = canvas.getContext('2d');
   let x = 0;
@@ -644,7 +646,6 @@
     }
   }
 
-  // FUTURISTIC FEMALE CYBER-AI RENDERER
   const kCanvas = document.getElementById('kurisuCanvas');
   const kCtx = kCanvas.getContext('2d');
   let frameCount = 0;
@@ -660,7 +661,6 @@
     const headX = w / 2;
     const headY = 160 + Math.sin(frameCount * 0.04) * 3;
 
-    // 1. Holographic Grid Background Ring
     kCtx.strokeStyle = activeWaveColor;
     kCtx.lineWidth = 1;
     kCtx.globalAlpha = 0.2;
@@ -669,7 +669,6 @@
     kCtx.stroke();
     kCtx.globalAlpha = 1.0;
 
-    // 2. Cyber Shoulders & Bust
     const bodyGrad = kCtx.createLinearGradient(0, headY + 50, 0, h);
     bodyGrad.addColorStop(0, '#0f172a');
     bodyGrad.addColorStop(1, '#020617');
@@ -689,7 +688,6 @@
     kCtx.fill();
     kCtx.stroke();
 
-    // Chest Biometric Core
     kCtx.save();
     kCtx.shadowColor = activeWaveColor;
     kCtx.shadowBlur = 15;
@@ -706,7 +704,6 @@
     kCtx.stroke();
     kCtx.restore();
 
-    // 3. Slender Cyber Neck
     kCtx.fillStyle = '#090d16';
     kCtx.fillRect(headX - 16, headY + 20, 32, 50);
     
@@ -719,7 +716,6 @@
     kCtx.lineTo(headX + 12, headY + 60);
     kCtx.stroke();
 
-    // 4. Female Cyber Face Base
     kCtx.fillStyle = '#090d16';
     kCtx.beginPath();
     kCtx.moveTo(headX - 45, headY - 40);
@@ -730,7 +726,6 @@
     kCtx.fill();
     kCtx.stroke();
 
-    // Head Visor
     kCtx.save();
     kCtx.shadowColor = activeWaveColor;
     kCtx.shadowBlur = 20;
@@ -745,14 +740,12 @@
     kCtx.fill();
     kCtx.restore();
 
-    // Eye Glint
     kCtx.fillStyle = '#ffffff';
     kCtx.beginPath();
     kCtx.arc(headX - 18 + (pulse * 0.5), headY - 2, 3, 0, Math.PI * 2);
     kCtx.arc(headX + 18 + (pulse * 0.5), headY - 2, 3, 0, Math.PI * 2);
     kCtx.fill();
 
-    // Lips Line
     kCtx.strokeStyle = activeWaveColor;
     kCtx.lineWidth = 2;
     kCtx.beginPath();
@@ -760,7 +753,6 @@
     kCtx.lineTo(headX + 8, headY + 35);
     kCtx.stroke();
 
-    // 5. Crown Hair Geometry
     kCtx.strokeStyle = activeWaveColor;
     kCtx.lineWidth = 2;
     
@@ -818,28 +810,25 @@
     if (bpm < 55) {
       applyDynamicTheme("#140924", "#1b0c30", "#0e061a", "#c084fc", "rgba(192, 132, 252, 0.45)", "#e9d5ff");
       setKurisuDialogue('"Low pulse anomaly detected. Recommending ambient recovery audio."');
-      moodEl.innerText = "Critically Low BPM (< 55)";
-      genreEl.innerText = "Rest & Ambient Sounds";
+      moodEl.innerText = "Low Pulse / Deep Rest (< 55 BPM)";
       activeCategory = "calm";
     } else if (bpm >= 55 && bpm <= 82) {
       applyDynamicTheme("#031c14", "#062b1f", "#02120d", "#22c55e", "rgba(34, 197, 94, 0.4)", "#86efac");
       setKurisuDialogue('"Optimal biometric rhythm achieved. Core state stabilized."');
-      moodEl.innerText = "Calm Baseline / Peaceful Vibe";
+      moodEl.innerText = "Calm Baseline / Moderate Heartbeat";
       activeCategory = "calm";
     } else if (bpm >= 83 && bpm <= 170) {
       applyDynamicTheme("#240909", "#360e0e", "#190505", "#f97316", "rgba(249, 115, 22, 0.45)", "#fdba74");
       setKurisuDialogue('"Elevated heart rate registered! Adjusting frequency output."');
-      moodEl.innerText = "High Energy / Excited / Stressed";
+      moodEl.innerText = "High Energy / Workout / Excited";
       activeCategory = "highEnergy";
     } else {
       applyDynamicTheme("#330505", "#4a0808", "#240303", "#ef4444", "rgba(239, 68, 68, 0.5)", "#fca5a5");
       setKurisuDialogue('"Warning: Extreme BPM overload! Initiate immediate relaxation sequence."');
       moodEl.innerText = "BPM Too High (> 170 BPM)";
-      genreEl.innerText = "Rest & Medical Caution";
       activeCategory = "extreme";
     }
 
-    // Keep the quote static unless category changes or page reloads
     if (!currentSelectedQuote || previousCategory !== activeCategory) {
       isBreakupOverride = false;
       currentSelectedQuote = getRandomQuote(activeCategory);
@@ -848,18 +837,21 @@
     quoteEl.innerText = currentSelectedQuote;
 
     let genreText = "";
-    if (targetMode === "maintain") {
-      if (bpm >= 55 && bpm <= 82) genreText = `${lang} Chill & Soft Hits`;
-      else genreText = `${lang} Motivational Workout Tracks`;
+    if (isBreakupOverride) {
+      genreText = `${lang} Breakup & Soup Songs Playlist`;
+    } else if (bpm < 55) {
+      genreText = `${lang} Ambient Sleep & Deep Meditation`;
+    } else if (bpm >= 55 && bpm <= 82) {
+      genreText = targetMode === "maintain" ? `${lang} Soft Melodies & Lo-Fi Hits` : `${lang} High-Tempo Dance Hits`;
+    } else if (bpm >= 83 && bpm <= 170) {
+      genreText = targetMode === "maintain" ? `${lang} High-Energy Workout Beats` : `${lang} Relaxing Acoustic Melodies`;
     } else {
-      if (bpm >= 55 && bpm <= 82) genreText = `${lang} Energetic Workout Tracks`;
-      else genreText = `${lang} Deep Relaxation Melodies`;
+      genreText = `${lang} Ultra-Calm Meditation & Classical Therapy`;
     }
 
     genreEl.innerText = genreText;
   }
 
-  // MODAL AND BREAKUP HANDLERS
   function openQuoteModal() {
     const modal = document.getElementById('quote-modal');
     const quoteText = document.getElementById('modal-quote-text');
@@ -871,11 +863,9 @@
     quoteText.innerText = currentSelectedQuote;
     modal.style.display = 'flex';
 
-    // Enable button immediately when opening standard modal (no initial countdown)
     proceedBtn.disabled = false;
     proceedBtn.innerText = "Launch YouTube Music Recommendation →";
 
-    // Show Breakup option for BOTH Calm AND High Energy BPM modes
     if (activeCategory === "calm" || activeCategory === "highEnergy") {
       breakupBtn.style.display = 'inline-block';
     } else {
@@ -896,9 +886,11 @@
 
     document.getElementById('modal-quote-text').innerText = currentSelectedQuote;
     document.getElementById('breakup-toggle-btn').style.display = 'none';
-    setKurisuDialogue('"Switched to Heartbreak mode. Time for some harsh truth..."');
+    setKurisuDialogue('"Switched to Heartbreak mode. Loading soup playlist..."');
 
-    // START 7-SECOND COUNTDOWN ONLY UPON CLICKING BREAKUP MODE
+    // Update main dashboard UI text dynamically
+    document.getElementById('suggested-genre').innerText = `${document.getElementById('lang-select').value} Breakup & Soup Songs Playlist`;
+
     proceedBtn.disabled = true;
     let timeLeft = 7;
 
@@ -906,11 +898,11 @@
 
     modalTimer = setInterval(() => {
       if (timeLeft > 0) {
-        proceedBtn.innerText = `Preparing Heartbreak Playlist (${timeLeft}s)...`;
+        proceedBtn.innerText = `Preparing Soup & Heartbreak Playlist (${timeLeft}s)...`;
         timeLeft--;
       } else {
         clearInterval(modalTimer);
-        proceedBtn.innerText = "Launch YouTube Breakup Songs →";
+        proceedBtn.innerText = "Launch YouTube Breakup & Soup Songs →";
         proceedBtn.disabled = false;
       }
     }, 1000);
@@ -921,20 +913,31 @@
     const targetMode = document.getElementById('target-mode').value;
     const bpm = getActiveBPM();
 
-    let query = `${lang} mood relaxation music`;
+    let searchQuery = "";
 
+    // DYNAMIC AND ACCURATE PLAYLIST SEARCH MATCHING
     if (isBreakupOverride) {
-      query = `${lang} breakup emotional sad songs heartbreak music`;
-    } else if (targetMode === "maintain") {
-      if (bpm >= 55 && bpm <= 82) query = `${lang} chill relaxing love romantic songs`;
-      else query = `${lang} motivational gym pump up songs`;
+      searchQuery = `${lang} breakup songs heartbreak soup songs love failure playlist`;
+    } else if (bpm < 55) {
+      searchQuery = `${lang} ambient deep sleep relaxing meditation music`;
+    } else if (bpm >= 55 && bpm <= 82) {
+      if (targetMode === "maintain") {
+        searchQuery = `${lang} soft melodic romantic hits lofi beats`;
+      } else {
+        searchQuery = `${lang} energetic party dance kuthu upbeat tracks`;
+      }
+    } else if (bpm >= 83 && bpm <= 170) {
+      if (targetMode === "maintain") {
+        searchQuery = `${lang} fast gym workout pump up fast beat songs`;
+      } else {
+        searchQuery = `${lang} calm acoustic soothing slow relaxation melodies`;
+      }
     } else {
-      if (bpm >= 55 && bpm <= 82) query = `${lang} motivational gym pump up workout songs`;
-      else query = `${lang} deep relaxation calm soothing melodies`;
+      searchQuery = `${lang} stress relief binaural beats classical therapy music`;
     }
 
     closeQuoteModal();
-    window.open(`https://music.youtube.com/search?q=${encodeURIComponent(query)}`, '_blank');
+    window.open(`https://music.youtube.com/search?q=${encodeURIComponent(searchQuery)}`, '_blank');
   }
 
   window.addEventListener('DOMContentLoaded', () => {
