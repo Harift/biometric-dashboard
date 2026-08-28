@@ -399,7 +399,6 @@
 
 <div class="main-container">
 
-  <!-- DASHBOARD CARD -->
   <div class="dashboard-card" id="main-card">
     
     <div class="header-bar">
@@ -416,12 +415,10 @@
     <div class="bpm-container">
       <div style="font-size: 11px; color: var(--text-muted); font-weight: bold; letter-spacing: 1.5px;">BIOMETRIC STREAM</div>
       
-      <!-- ESP32 DISPLAY -->
       <div class="bpm-value" id="bpm-val-esp" style="display: none;">
         <span class="bpm-waiting">Touch ESP32 Sensor...</span>
       </div>
       
-      <!-- MANUAL INPUT DISPLAY -->
       <div class="manual-bpm-box" id="manual-input-container">
         <label for="manual-bpm-field">ENTER BPM:</label>
         <input type="number" id="manual-bpm-field" placeholder="e.g. 75" min="30" max="250" oninput="updateAnalysis()" value="75">
@@ -469,7 +466,6 @@
 
   </div>
 
-  <!-- CYBER FEMALE AI CANVAS AVATAR -->
   <div class="avatar-wrapper">
     <div class="avatar-dialog-box" id="kurisu-dialog">"Waiting for biometric pulse..."</div>
     <canvas id="kurisuCanvas" width="340" height="440"></canvas>
@@ -477,7 +473,6 @@
 
 </div>
 
-<!-- POPUP MODAL -->
 <div class="modal-overlay" id="quote-modal">
   <div class="modal-card">
     <div style="font-size: 11px; color: var(--text-muted); font-weight: bold; letter-spacing: 1px;">🧠 AI NEURAL ADVICE</div>
@@ -487,8 +482,8 @@
       💔 Feeling Heartbroken? Switch to Breakup Songs
     </button>
 
-    <button class="btn-modal-proceed" id="modal-proceed-btn" disabled onclick="redirectToYouTube()">
-      Please wait (7s)...
+    <button class="btn-modal-proceed" id="modal-proceed-btn" onclick="redirectToYouTube()">
+      Launch YouTube Music Recommendation →
     </button>
 
     <button class="btn-modal-back" onclick="closeQuoteModal()">
@@ -871,8 +866,14 @@
     const breakupBtn = document.getElementById('breakup-toggle-btn');
     const proceedBtn = document.getElementById('modal-proceed-btn');
 
+    if (modalTimer) clearInterval(modalTimer);
+
     quoteText.innerText = currentSelectedQuote;
     modal.style.display = 'flex';
+
+    // Enable button immediately when opening standard modal (no initial countdown)
+    proceedBtn.disabled = false;
+    proceedBtn.innerText = "Launch YouTube Music Recommendation →";
 
     // Show Breakup option for BOTH Calm AND High Energy BPM modes
     if (activeCategory === "calm" || activeCategory === "highEnergy") {
@@ -880,23 +881,6 @@
     } else {
       breakupBtn.style.display = 'none';
     }
-
-    // Start 7-second countdown lock
-    proceedBtn.disabled = true;
-    let timeLeft = 7;
-
-    if (modalTimer) clearInterval(modalTimer);
-
-    modalTimer = setInterval(() => {
-      if (timeLeft > 0) {
-        proceedBtn.innerText = `Preparing YouTube Stream (${timeLeft}s)...`;
-        timeLeft--;
-      } else {
-        clearInterval(modalTimer);
-        proceedBtn.innerText = "Launch YouTube Music Recommendation →";
-        proceedBtn.disabled = false;
-      }
-    }, 1000);
   }
 
   function closeQuoteModal() {
@@ -905,6 +889,7 @@
   }
 
   function enableBreakupMode() {
+    const proceedBtn = document.getElementById('modal-proceed-btn');
     isBreakupOverride = true;
     activeCategory = "breakup";
     currentSelectedQuote = getRandomQuote("breakup");
@@ -912,6 +897,23 @@
     document.getElementById('modal-quote-text').innerText = currentSelectedQuote;
     document.getElementById('breakup-toggle-btn').style.display = 'none';
     setKurisuDialogue('"Switched to Heartbreak mode. Time for some harsh truth..."');
+
+    // START 7-SECOND COUNTDOWN ONLY UPON CLICKING BREAKUP MODE
+    proceedBtn.disabled = true;
+    let timeLeft = 7;
+
+    if (modalTimer) clearInterval(modalTimer);
+
+    modalTimer = setInterval(() => {
+      if (timeLeft > 0) {
+        proceedBtn.innerText = `Preparing Heartbreak Playlist (${timeLeft}s)...`;
+        timeLeft--;
+      } else {
+        clearInterval(modalTimer);
+        proceedBtn.innerText = "Launch YouTube Breakup Songs →";
+        proceedBtn.disabled = false;
+      }
+    }, 1000);
   }
 
   function redirectToYouTube() {
