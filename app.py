@@ -95,6 +95,7 @@ HTML_TEMPLATE = """
       border-radius: 16px;
       filter: drop-shadow(0 0 15px var(--accent-color));
       transition: filter 0.8s ease;
+      background: transparent;
     }
 
     .avatar-dialog-box {
@@ -161,6 +162,7 @@ HTML_TEMPLATE = """
 
     .manual-bpm-box {
       margin-top: 10px;
+      margin-bottom: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -261,13 +263,6 @@ HTML_TEMPLATE = """
     .btn-submit:hover {
       filter: brightness(1.2);
     }
-
-    .btn-disabled {
-      background: #1e293b !important;
-      color: #64748b !important;
-      cursor: not-allowed !important;
-      border: none !important;
-    }
   </style>
 </head>
 <body>
@@ -282,8 +277,8 @@ HTML_TEMPLATE = """
       <div>
         <span style="color: var(--text-muted); margin-right: 6px;">MODE:</span>
         <select class="mode-select-header" id="input-mode-select" onchange="toggleInputMode()">
-          <option value="esp32">ESP32 Hardware Stream</option>
-          <option value="manual" selected>Manual BPM Input</option>
+          <option value="esp32" selected>ESP32 Hardware Stream</option>
+          <option value="manual">Manual BPM Input</option>
         </select>
       </div>
     </div>
@@ -291,12 +286,13 @@ HTML_TEMPLATE = """
     <div class="bpm-container">
       <div style="font-size: 11px; color: var(--text-muted); font-weight: bold; letter-spacing: 1.5px;">BIOMETRIC STREAM</div>
       
-      <div class="bpm-value" id="bpm-val-esp" style="display: none;">
+      <!-- ESP32 DISPLAY -->
+      <div class="bpm-value" id="bpm-val-esp">
         <span class="bpm-waiting">Touch ESP32 Sensor...</span>
       </div>
       
-      <!-- PERMANENT MANUAL INPUT UI -->
-      <div class="manual-bpm-box" id="manual-input-container">
+      <!-- MANUAL INPUT DISPLAY (HIDDEN BY DEFAULT IN ESP32 MODE) -->
+      <div class="manual-bpm-box" id="manual-input-container" style="display: none;">
         <label for="manual-bpm-field">ENTER BPM:</label>
         <input type="number" id="manual-bpm-field" placeholder="e.g. 75" min="30" max="250" oninput="updateAnalysis()" value="75">
       </div>
@@ -351,7 +347,7 @@ HTML_TEMPLATE = """
 <script>
   let isHardwareConnected = false;
   let espBpmValue = 0;
-  let activeInputMode = "manual";
+  let activeInputMode = "esp32";
   let activeWaveColor = '#38bdf8';
   let currentEmotion = "neutral";
 
@@ -455,7 +451,6 @@ HTML_TEMPLATE = """
 
     kCtx.clearRect(0, 0, w, h);
 
-    // Subtle breath offset
     const breathY = Math.sin(frameCount * 0.05) * 2;
 
     // 1. Back Long Hair (Chestnut Red-Brown)
@@ -473,10 +468,10 @@ HTML_TEMPLATE = """
     kCtx.fill();
 
     // 2. White Dress Shirt & Outer Coat
-    kCtx.fillStyle = '#1e293b'; // inner dark skirt base
+    kCtx.fillStyle = '#1e293b';
     kCtx.fillRect(110, 360 + breathY, 120, 80);
 
-    kCtx.fillStyle = '#ffffff'; // White shirt
+    kCtx.fillStyle = '#ffffff';
     kCtx.beginPath();
     kCtx.moveTo(125, 230 + breathY);
     kCtx.lineTo(215, 230 + breathY);
@@ -484,7 +479,7 @@ HTML_TEMPLATE = """
     kCtx.lineTo(110, 440);
     kCtx.fill();
 
-    // Khaki Coat (Folded around arms)
+    // Khaki Coat
     kCtx.fillStyle = '#a88151';
     kCtx.beginPath();
     kCtx.moveTo(60, 260 + breathY);
@@ -536,13 +531,11 @@ HTML_TEMPLATE = """
 
     // 4. Eyes (Kurisu Deep Violet Iris)
     const drawEye = (cx, cy) => {
-      // White base
       kCtx.fillStyle = '#ffffff';
       kCtx.beginPath();
       kCtx.ellipse(cx, cy, 14, 18, 0, 0, Math.PI * 2);
       kCtx.fill();
 
-      // Violet Iris
       const eyeGrad = kCtx.createLinearGradient(0, cy - 15, 0, cy + 15);
       eyeGrad.addColorStop(0, '#c084fc');
       eyeGrad.addColorStop(0.5, '#7e22ce');
@@ -552,13 +545,11 @@ HTML_TEMPLATE = """
       kCtx.ellipse(cx, cy, 11, 15, 0, 0, Math.PI * 2);
       kCtx.fill();
 
-      // Pupil
       kCtx.fillStyle = '#1e1b4b';
       kCtx.beginPath();
       kCtx.arc(cx, cy, 5, 0, Math.PI * 2);
       kCtx.fill();
 
-      // Highlight catchlight
       kCtx.fillStyle = '#ffffff';
       kCtx.beginPath();
       kCtx.arc(cx - 4, cy - 6, 3.5, 0, Math.PI * 2);
@@ -578,25 +569,22 @@ HTML_TEMPLATE = """
     kCtx.quadraticCurveTo(200, 126 + breathY, 218, 134 + breathY);
     kCtx.stroke();
 
-    // 5. Eyebrows (Dynamic Emotion)
+    // 5. Eyebrows
     kCtx.strokeStyle = '#5a1807';
     kCtx.lineWidth = 3;
     kCtx.beginPath();
 
     if (currentEmotion === 'tsundere') {
-      // Slanted inward sharp eyebrows
       kCtx.moveTo(124, 122 + breathY);
       kCtx.lineTo(154, 130 + breathY);
       kCtx.moveTo(186, 130 + breathY);
       kCtx.lineTo(216, 122 + breathY);
     } else if (currentEmotion === 'concerned') {
-      // Worried raised brows
       kCtx.moveTo(124, 128 + breathY);
       kCtx.lineTo(154, 120 + breathY);
       kCtx.moveTo(186, 120 + breathY);
       kCtx.lineTo(216, 128 + breathY);
     } else {
-      // Soft neutral brows
       kCtx.moveTo(124, 124 + breathY);
       kCtx.quadraticCurveTo(140, 118 + breathY, 154, 124 + breathY);
       kCtx.moveTo(186, 124 + breathY);
@@ -610,17 +598,13 @@ HTML_TEMPLATE = """
     kCtx.beginPath();
 
     if (currentEmotion === 'tsundere') {
-      // Pouting open curve
       kCtx.arc(170, 178 + breathY, 6, 0.1 * Math.PI, 0.9 * Math.PI, false);
     } else if (currentEmotion === 'calm') {
-      // Soft smirk
       kCtx.moveTo(162, 175 + breathY);
       kCtx.quadraticCurveTo(170, 182 + breathY, 178, 174 + breathY);
     } else if (currentEmotion === 'concerned') {
-      // Small surprised 'o'
       kCtx.arc(170, 178 + breathY, 5, 0, Math.PI * 2);
     } else {
-      // Small neutral line
       kCtx.moveTo(164, 176 + breathY);
       kCtx.lineTo(176, 176 + breathY);
     }
@@ -629,21 +613,18 @@ HTML_TEMPLATE = """
     // 7. Front Bangs & Framing Hair Strands
     kCtx.fillStyle = hairGrad;
     kCtx.beginPath();
-    // Middle bangs
     kCtx.moveTo(110, 90 + breathY);
     kCtx.bezierCurveTo(140, 140, 145, 90, 155, 135);
     kCtx.bezierCurveTo(165, 85, 185, 140, 230, 90 + breathY);
     kCtx.bezierCurveTo(220, 50, 120, 50, 110, 90 + breathY);
     kCtx.fill();
 
-    // Left long strand
     kCtx.beginPath();
     kCtx.moveTo(115, 100 + breathY);
     kCtx.quadraticCurveTo(90, 180, 100, 290 + breathY);
     kCtx.quadraticCurveTo(120, 200, 130, 120 + breathY);
     kCtx.fill();
 
-    // Right long strand
     kCtx.beginPath();
     kCtx.moveTo(225, 100 + breathY);
     kCtx.quadraticCurveTo(250, 180, 240, 290 + breathY);
@@ -653,6 +634,7 @@ HTML_TEMPLATE = """
     requestAnimationFrame(drawKurisu);
   }
 
+  // Start animation immediately
   drawKurisu();
 
   function applyDynamicTheme(bgColor, cardBg, containerBg, accentColor, glowColor, textMuted) {
@@ -738,8 +720,8 @@ HTML_TEMPLATE = """
     window.open(`https://music.youtube.com/search?q=${encodeURIComponent(query)}`, '_blank');
   }
 
-  // Initial trigger on load
-  updateAnalysis();
+  // Ensure interface sync on initial boot
+  toggleInputMode();
 </script>
 
 </body>
