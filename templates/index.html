@@ -20,6 +20,12 @@
       100% { box-shadow: inset 0 0 40px var(--glow-color); }
     }
 
+    @keyframes alertBlink {
+      0% { opacity: 1; }
+      50% { opacity: 0.3; }
+      100% { opacity: 1; }
+    }
+
     * {
       box-sizing: border-box;
     }
@@ -67,6 +73,20 @@
       gap: 16px;
       transition: all 0.8s ease;
       box-shadow: 0 10px 35px rgba(0,0,0,0.85);
+    }
+
+    .medical-alert-banner {
+      display: none;
+      background: rgba(239, 68, 68, 0.25);
+      border: 2px solid #ef4444;
+      color: #fca5a5;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-weight: bold;
+      font-size: 13px;
+      text-align: center;
+      letter-spacing: 0.5px;
+      animation: alertBlink 1.2s infinite ease-in-out;
     }
 
     .avatar-wrapper {
@@ -400,6 +420,11 @@
 
   <!-- DASHBOARD CARD -->
   <div class="dashboard-card" id="main-card">
+
+    <!-- MEDICAL ALERT BANNER -->
+    <div class="medical-alert-banner" id="medical-alert">
+      ⚠️ MEDICAL WARNING: CRITICAL HEART RATE DETECTED!
+    </div>
     
     <div class="header-bar">
       <span>ESP32 SENSOR: <span id="esp-status-badge" class="status-badge status-offline">WAITING FOR ESP32</span></span>
@@ -479,7 +504,7 @@
 <!-- POPUP MODAL -->
 <div class="modal-overlay" id="quote-modal">
   <div class="modal-card">
-    <div style="font-size: 11px; color: var(--text-muted); font-weight: bold; letter-spacing: 1px;">🧠 AI NEURAL ADVICE</div>
+    <div style="font-size: 11px; color: var(--text-muted); font-weight: bold; letter-spacing: 1px;" id="modal-header-title">🧠 AI NEURAL ADVICE</div>
     <div class="modal-quote" id="modal-quote-text">Loading quote...</div>
 
     <button class="btn-breakup-toggle" id="breakup-toggle-btn" style="display: none;" onclick="enableBreakupMode()">
@@ -498,53 +523,47 @@
 
 <script>
   const quotesPool = {
+    criticalLow: [
+      '🚨 "Low BPM Alert: Extremely low heart rate detected (< 55 BPM)! Please seek medical assistance if you feel dizzy or unwell."',
+      '⚠️ "CRITICAL ALERT: Biometric heart rate is dangerously low. Please rest and seek immediate medical assistance if symptoms persist."'
+    ],
     calm: [
       '🧘‍♂️ "A tranquil mind brings inner strength and self-confidence."',
       '🕊️ "Peace comes from within. Do not seek it without."',
       '🌌 "Quiet the mind, and the soul will speak."',
       '🌿 "Calmness is the cradle of power."',
-      '✨ "In the silence of the heart, wisdom awakens."',
-      '🌸 "Breathing in, I calm body and mind. Breathing out, I smile."',
-      '🛡️ "Serenity is not freedom from the storm, but peace amid the storm."',
-      '💧 "The mind should be like water—smooth, calm, and reflecting truth."',
-      '🐢 "Slow down and everything you are chasing will come around and catch you."',
-      '⚓ "A quiet pulse is a fortress against life\'s chaos."'
+      '✨ "In the silence of the heart, wisdom awakens."'
+    ],
+    normal: [
+      '⚡ "Balanced rhythm, sharp focus. You are in optimal performance mode."',
+      '🎯 "Harmonious pulse detected. Stay steady and trust your stride."',
+      '🌊 "Smooth waves ahead. Perfect balance between rest and high energy."',
+      '✨ "Your vitals are steady. Keep doing what you are doing."',
+      '🚀 "Consistent pulse, crystal clear mindset. Time to get things done."'
     ],
     highEnergy: [
       '🔥 "Channel that fiery pulse into relentless momentum. Do not break—dominate!"',
       '⚡ "Your energy defines your reality. Turn up the fire inside!"',
       '🎯 "Action is the foundational key to all success. Keep moving!"',
       '💯 "Don\'t stop when you\'re tired. Stop when you\'re done."',
-      '🚀 "The only limits that exist are the ones you build in your mind."',
-      '🦁 "Turn your adrenaline into accomplishment!"',
-      '🏋️‍♂️ "Strength does not come from winning. Your struggles develop your strengths."',
-      '🥊 "Push harder than yesterday if you want a better tomorrow."',
-      '🥁 "Your heartbeat is the drumline to your own success story."',
-      '🏆 "Seize the energy of this moment and conquer your goals."'
+      '🚀 "The only limits that exist are the ones you build in your mind."'
     ],
     extreme: [
-      '🛑 "Pause immediately. Even the strongest engines overheat when driven endlessly."',
+      '🛑 "Pause immediately. High heart rate overload detected. Take deep breaths and rest."',
       '🧘‍♀️ "Breathe deep. Stress is an illusion created by temporary overload."',
       '⚠️ "Step back before you step over the line. Regain control."',
-      '🛡️ "In high-pressure moments, composure is your greatest weapon."',
-      '🌲 "When storm winds rage, the wise tree bends instead of breaking."',
-      '🧊 "Relax your shoulders, unclench your jaw. Control your pulse."',
-      '⌛ "A rapid mind makes reckless choices. Pause and reset."',
-      '🌊 "Take a step back. Chaos passes, but your wellness comes first."',
-      '📡 "Your heart is sending a signal: slow down and recalculate."',
-      '🌌 "Mastering your breath is the first step to mastering your life."'
+      '🛡️ "In high-pressure moments, composure is your greatest weapon."'
+    ],
+    criticalHigh: [
+      '🚨 "Critical Alert: Extremely high BPM detected (> 200 BPM)! Stop physical activity immediately and seek medical assistance."',
+      '⚠️ "EMERGENCY BIOMETRIC ALERT: Heart rate exceeds 200 BPM. Please sit down, stay calm, and seek medical help right away."'
     ],
     breakup: [
       '📲 "Crying over someone who replaced you like a software update? Hit the gym and delete their number! 💪"',
       '🥀 "They lost someone who loved them; you lost someone who didn\'t value you. Who really lost? 🤔"',
       '🗑️ "Stop checking their profile. You\'re inspecting garbage you already threw out."',
       '📱 "Your heart rate spiked for someone who couldn\'t reply to a text? Time for soup songs! 🥣"',
-      '🦠 "A breakup is just the universe\'s way of un-installing toxic malware from your life 🚫"',
-      '✨ "They aren\'t your soulmate, they were just a life lesson with good lighting 📸"',
-      '🎧 "Turn up the soup songs, wipe your tears, and upgrade your life ✨"',
-      '🏋️ "Miss them? Go do 20 pushups and listen to breakup hits. You\'re just bored 💧"',
-      '👑 "Why cry over spilled milk when you can listen to soup hits and build an empire? 🏛️"',
-      '💎 "Love is grand, but self-respect is priceless. Level up 👑"'
+      '🦠 "A breakup is just the universe\'s way of un-installing toxic malware from your life 🚫"'
     ]
   };
 
@@ -552,7 +571,7 @@
   let espBpmValue = 0;
   let activeInputMode = "manual";
   let activeWaveColor = '#38bdf8';
-  let activeCategory = "calm";
+  let activeCategory = "normal";
   let isBreakupOverride = false;
   let currentSelectedQuote = "";
   let modalTimer = null;
@@ -576,7 +595,8 @@
     
     let y = canvas.height / 2;
     if (activeState && x % 60 > 25 && x % 60 < 35) {
-      y += (Math.random() - 0.5) * 35;
+      const multiplier = getActiveBPM() > 200 ? 45 : 35;
+      y += (Math.random() - 0.5) * multiplier;
     }
     
     ctx.lineTo(x, y);
@@ -607,7 +627,7 @@
   }
 
   function getRandomQuote(category) {
-    const pool = quotesPool[category] || quotesPool.calm;
+    const pool = quotesPool[category] || quotesPool.normal;
     return pool[Math.floor(Math.random() * pool.length)];
   }
 
@@ -795,8 +815,10 @@
     const moodEl = document.getElementById('detected-mood');
     const genreEl = document.getElementById('suggested-genre');
     const quoteEl = document.getElementById('dynamic-quote');
+    const alertBanner = document.getElementById('medical-alert');
 
     if (!bpm || bpm <= 0) {
+      alertBanner.style.display = 'none';
       applyDynamicTheme("#030712", "#090d16", "#030712", "#38bdf8", "rgba(56, 189, 248, 0.15)", "#64748b");
       setKurisuDialogue('"Awaiting biometric stream synchronization..."');
       moodEl.innerText = "Waiting for Data...";
@@ -807,26 +829,45 @@
 
     let previousCategory = activeCategory;
 
+    // MEDICAL CRITICAL & NORMAL RANGES
     if (bpm < 55) {
-      applyDynamicTheme("#140924", "#1b0c30", "#0e061a", "#c084fc", "rgba(192, 132, 252, 0.45)", "#e9d5ff");
-      setKurisuDialogue('"Low pulse anomaly detected. Recommending ambient recovery audio."');
-      moodEl.innerText = "Low Pulse / Deep Rest (< 55 BPM)";
-      activeCategory = "calm";
-    } else if (bpm >= 55 && bpm <= 82) {
+      alertBanner.style.display = 'block';
+      alertBanner.innerText = '⚠️ LOW BPM ALERT: Extremely low heart rate detected! Seek medical assistance.';
+      applyDynamicTheme("#1e0505", "#2d0808", "#120303", "#ef4444", "rgba(239, 68, 68, 0.5)", "#fca5a5");
+      setKurisuDialogue('"CRITICAL LOW PULSE! Please rest and seek medical assistance."');
+      moodEl.innerText = "⚠️ Low Pulse Alert (< 55 BPM)";
+      activeCategory = "criticalLow";
+    } else if (bpm >= 55 && bpm <= 66) {
+      alertBanner.style.display = 'none';
       applyDynamicTheme("#031c14", "#062b1f", "#02120d", "#22c55e", "rgba(34, 197, 94, 0.4)", "#86efac");
-      setKurisuDialogue('"Optimal biometric rhythm achieved. Core state stabilized."');
-      moodEl.innerText = "Calm Baseline / Moderate Heartbeat";
+      setKurisuDialogue('"Calm baseline active. Smooth mental frequency locked in."');
+      moodEl.innerText = "Calm Baseline State (55 - 66 BPM)";
       activeCategory = "calm";
+    } else if (bpm >= 67 && bpm <= 82) {
+      alertBanner.style.display = 'none';
+      applyDynamicTheme("#032030", "#08334c", "#021624", "#38bdf8", "rgba(56, 189, 248, 0.4)", "#7dd3fc");
+      setKurisuDialogue('"Normal healthy pulse registered. Optimal equilibrium reached."');
+      moodEl.innerText = "Normal Heart Rate (67 - 82 BPM)";
+      activeCategory = "normal";
     } else if (bpm >= 83 && bpm <= 170) {
+      alertBanner.style.display = 'none';
       applyDynamicTheme("#240909", "#360e0e", "#190505", "#f97316", "rgba(249, 115, 22, 0.45)", "#fdba74");
       setKurisuDialogue('"Elevated heart rate registered! Adjusting frequency output."');
-      moodEl.innerText = "High Energy / Workout / Excited";
+      moodEl.innerText = "High Energy / Workout (83 - 170 BPM)";
       activeCategory = "highEnergy";
-    } else {
-      applyDynamicTheme("#330505", "#4a0808", "#240303", "#ef4444", "rgba(239, 68, 68, 0.5)", "#fca5a5");
-      setKurisuDialogue('"Warning: Extreme BPM overload! Initiate immediate relaxation sequence."');
-      moodEl.innerText = "BPM Too High (> 170 BPM)";
+    } else if (bpm >= 171 && bpm <= 200) {
+      alertBanner.style.display = 'none';
+      applyDynamicTheme("#330505", "#4a0808", "#240303", "#dc2626", "rgba(220, 38, 38, 0.5)", "#fca5a5");
+      setKurisuDialogue('"Warning: Extreme BPM overload! Initiate relaxation sequence."');
+      moodEl.innerText = "Extreme BPM Overload (171 - 200 BPM)";
       activeCategory = "extreme";
+    } else { // bpm > 200
+      alertBanner.style.display = 'block';
+      alertBanner.innerText = '⚠️ CRITICAL ALERT: Extremely high BPM detected (> 200)! Seek medical assistance.';
+      applyDynamicTheme("#3b0202", "#520404", "#240101", "#dc2626", "rgba(220, 38, 38, 0.6)", "#f87171");
+      setKurisuDialogue('"EMERGENCY ALERT: Heart rate exceeds 200 BPM! Seek medical help immediately!"');
+      moodEl.innerText = "🚨 Critical High Alert (> 200 BPM)";
+      activeCategory = "criticalHigh";
     }
 
     if (!currentSelectedQuote || previousCategory !== activeCategory) {
@@ -840,13 +881,17 @@
     if (isBreakupOverride) {
       genreText = `${lang} Breakup & Soup Songs Playlist`;
     } else if (bpm < 55) {
-      genreText = `${lang} Ambient Sleep & Deep Meditation`;
-    } else if (bpm >= 55 && bpm <= 82) {
-      genreText = targetMode === "maintain" ? `${lang} Soft Melodies & Lo-Fi Hits` : `${lang} High-Tempo Dance Hits`;
+      genreText = `Medical Advisory / Peaceful Deep Rest`;
+    } else if (bpm >= 55 && bpm <= 66) {
+      genreText = targetMode === "maintain" ? `${lang} Soft Acoustic & Lo-Fi Chill` : `${lang} Upbeat Pop Hits`;
+    } else if (bpm >= 67 && bpm <= 82) {
+      genreText = targetMode === "maintain" ? `${lang} Balanced Hits & Melodic Radio` : `${lang} High Tempo Gym Beats`;
     } else if (bpm >= 83 && bpm <= 170) {
-      genreText = targetMode === "maintain" ? `${lang} High-Energy Workout Beats` : `${lang} Relaxing Acoustic Melodies`;
+      genreText = targetMode === "maintain" ? `${lang} High-Energy Kuthu & Workout Pump` : `${lang} Calm Soothing Acoustic`;
+    } else if (bpm >= 171 && bpm <= 200) {
+      genreText = `${lang} Guided Meditation & Stress Therapy`;
     } else {
-      genreText = `${lang} Ultra-Calm Meditation & Classical Therapy`;
+      genreText = `Emergency Medical Focus / Slow Ambient Recovery`;
     }
 
     genreEl.innerText = genreText;
@@ -857,19 +902,28 @@
     const quoteText = document.getElementById('modal-quote-text');
     const breakupBtn = document.getElementById('breakup-toggle-btn');
     const proceedBtn = document.getElementById('modal-proceed-btn');
+    const modalTitle = document.getElementById('modal-header-title');
 
     if (modalTimer) clearInterval(modalTimer);
 
     quoteText.innerText = currentSelectedQuote;
     modal.style.display = 'flex';
 
-    proceedBtn.disabled = false;
-    proceedBtn.innerText = "Launch YouTube Music Recommendation →";
-
-    if (activeCategory === "calm" || activeCategory === "highEnergy") {
-      breakupBtn.style.display = 'inline-block';
-    } else {
+    if (activeCategory === "criticalLow" || activeCategory === "criticalHigh") {
+      modalTitle.innerText = "🚨 CRITICAL BIOMETRIC ALERT";
       breakupBtn.style.display = 'none';
+      proceedBtn.disabled = false;
+      proceedBtn.innerText = "Launch Soothing Emergency Music →";
+    } else {
+      modalTitle.innerText = "🧠 AI NEURAL ADVICE";
+      proceedBtn.disabled = false;
+      proceedBtn.innerText = "Launch YouTube Music Recommendation →";
+
+      if (activeCategory === "calm" || activeCategory === "normal" || activeCategory === "highEnergy") {
+        breakupBtn.style.display = 'inline-block';
+      } else {
+        breakupBtn.style.display = 'none';
+      }
     }
   }
 
@@ -888,7 +942,6 @@
     document.getElementById('breakup-toggle-btn').style.display = 'none';
     setKurisuDialogue('"Switched to Heartbreak mode. Loading soup playlist..."');
 
-    // Update main dashboard UI text dynamically
     document.getElementById('suggested-genre').innerText = `${document.getElementById('lang-select').value} Breakup & Soup Songs Playlist`;
 
     proceedBtn.disabled = true;
@@ -915,25 +968,32 @@
 
     let searchQuery = "";
 
-    // DYNAMIC AND ACCURATE PLAYLIST SEARCH MATCHING
     if (isBreakupOverride) {
-      searchQuery = `${lang} breakup songs heartbreak soup songs love failure playlist`;
+      searchQuery = `${lang} breakup songs heartbreak soup songs love failure hits playlist`;
     } else if (bpm < 55) {
-      searchQuery = `${lang} ambient deep sleep relaxing meditation music`;
-    } else if (bpm >= 55 && bpm <= 82) {
+      searchQuery = `${lang} deep sleep ambient relaxation calm meditation music`;
+    } else if (bpm >= 55 && bpm <= 66) {
       if (targetMode === "maintain") {
-        searchQuery = `${lang} soft melodic romantic hits lofi beats`;
+        searchQuery = `${lang} soft acoustic chill melodies lofi`;
       } else {
-        searchQuery = `${lang} energetic party dance kuthu upbeat tracks`;
+        searchQuery = `${lang} energetic upbeat dance songs`;
+      }
+    } else if (bpm >= 67 && bpm <= 82) {
+      if (targetMode === "maintain") {
+        searchQuery = `${lang} balanced romantic hits melody songs`;
+      } else {
+        searchQuery = `${lang} fast upbeat workout gym beats`;
       }
     } else if (bpm >= 83 && bpm <= 170) {
       if (targetMode === "maintain") {
-        searchQuery = `${lang} fast gym workout pump up fast beat songs`;
+        searchQuery = `${lang} high energy fast kuthu workout pump up songs`;
       } else {
-        searchQuery = `${lang} calm acoustic soothing slow relaxation melodies`;
+        searchQuery = `${lang} slow calm peaceful soothing melody tracks`;
       }
+    } else if (bpm >= 171 && bpm <= 200) {
+      searchQuery = `${lang} stress relief binaural beats therapy relaxation`;
     } else {
-      searchQuery = `${lang} stress relief binaural beats classical therapy music`;
+      searchQuery = `soothing peaceful ambient music high bpm recovery`;
     }
 
     closeQuoteModal();
