@@ -46,22 +46,83 @@ HTML_TEMPLATE = """
       align-items: center;
       min-height: 100vh;
       margin: 0;
+      overflow: hidden;
+      position: relative;
       transition: background-color 0.8s ease;
       animation: bgPulseGlow 2s infinite ease-in-out;
     }
 
+    /* AVATAR LAYER (Positioned between BG and Dashboard Card) */
+    .avatar-layer {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1; /* Layer behind front dashboard (z-index: 10) */
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.85;
+      transition: all 0.8s ease;
+    }
+
+    .avatar-svg {
+      width: 380px;
+      height: 380px;
+      filter: drop-shadow(0 0 25px var(--accent-color));
+      transition: filter 0.8s ease;
+    }
+
+    /* Mood Animation Classes */
+    .avatar-sleeping {
+      animation: sleepFloat 4s infinite ease-in-out;
+    }
+    .avatar-vibe {
+      animation: vibeBop 1.2s infinite ease-in-out;
+    }
+    .avatar-pumped {
+      animation: workoutPump 0.6s infinite ease-in-out;
+    }
+    .avatar-concerned {
+      animation: concernedShake 0.4s infinite ease-in-out;
+    }
+
+    @keyframes sleepFloat {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-15px) rotate(-2deg); }
+    }
+    @keyframes vibeBop {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-12px) scale(1.03); }
+    }
+    @keyframes workoutPump {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-18px) scale(1.08) rotate(3deg); }
+    }
+    @keyframes concernedShake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px) rotate(-2deg); }
+      75% { transform: translateX(6px) rotate(2deg); }
+    }
+
+    /* FRONT DASHBOARD CARD LAYER */
     .dashboard-card {
+      position: relative;
+      z-index: 10; /* Front Layer */
       background: var(--card-bg);
       border: 1px solid var(--accent-color);
       border-radius: 20px;
       width: 90%;
       max-width: 750px;
       padding: 32px;
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(14px);
       display: flex;
       flex-direction: column;
       gap: 20px;
       transition: all 0.8s ease;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     }
 
     .header-bar {
@@ -242,6 +303,44 @@ HTML_TEMPLATE = """
 </head>
 <body>
 
+<!-- MID-LAYER AVATAR BACKGROUND -->
+<div class="avatar-layer avatar-sleeping" id="avatar-container">
+  <svg class="avatar-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <!-- Aura Glow Background -->
+    <circle cx="100" cy="100" r="80" fill="var(--accent-color)" opacity="0.15" />
+    
+    <!-- Hair Base -->
+    <path d="M 50 110 C 45 40, 155 40, 150 110 C 160 80, 140 30, 100 30 C 60 30, 40 80, 50 110 Z" fill="#334155" />
+    
+    <!-- Face Contour -->
+    <ellipse cx="100" cy="105" rx="42" ry="46" fill="#fde047" opacity="0.95" />
+    
+    <!-- Dynamic Hair Bangs -->
+    <path d="M 60 75 Q 100 95 140 75 Q 100 60 60 75 Z" fill="#1e293b" />
+    
+    <!-- Dynamic Eyes Layer -->
+    <g id="avatar-eyes">
+      <!-- Default Sleeping Eyes Zzz -->
+      <path d="M 75 102 Q 85 108 90 102" stroke="#0f172a" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M 110 102 Q 115 108 125 102" stroke="#0f172a" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </g>
+
+    <!-- Dynamic Mouth Layer -->
+    <g id="avatar-mouth">
+      <!-- Calm Sleeping Mouth -->
+      <path d="M 92 125 Q 100 128 108 125" stroke="#0f172a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    </g>
+
+    <!-- Dynamic Accessories / Mood Indicators (Zzz, Sweat, Sweatband, Alert) -->
+    <g id="avatar-extras">
+      <!-- Floating Zzz for sleeping state -->
+      <text x="135" y="65" fill="var(--accent-color)" font-size="16" font-weight="bold" opacity="0.8">Z</text>
+      <text x="148" y="50" fill="var(--accent-color)" font-size="12" font-weight="bold" opacity="0.6">z</text>
+    </g>
+  </svg>
+</div>
+
+<!-- FRONT DASHBOARD CARD LAYER -->
 <div class="dashboard-card" id="main-card">
   
   <div class="header-bar">
@@ -451,6 +550,59 @@ HTML_TEMPLATE = """
     }
   }
 
+  function setAvatarMood(moodState) {
+    const avatarContainer = document.getElementById('avatar-container');
+    const eyesGroup = document.getElementById('avatar-eyes');
+    const mouthGroup = document.getElementById('avatar-mouth');
+    const extrasGroup = document.getElementById('avatar-extras');
+
+    avatarContainer.className = "avatar-layer avatar-" + moodState;
+
+    if (moodState === "sleeping") {
+      eyesGroup.innerHTML = `
+        <path d="M 75 102 Q 85 108 90 102" stroke="#0f172a" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M 110 102 Q 115 108 125 102" stroke="#0f172a" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+      mouthGroup.innerHTML = `<path d="M 92 125 Q 100 128 108 125" stroke="#0f172a" stroke-width="2.5" fill="none" stroke-linecap="round"/>`;
+      extrasGroup.innerHTML = `
+        <text x="135" y="65" fill="var(--accent-color)" font-size="16" font-weight="bold" opacity="0.8">Z</text>
+        <text x="148" y="50" fill="var(--accent-color)" font-size="12" font-weight="bold" opacity="0.6">z</text>`;
+    } else if (moodState === "vibe") {
+      eyesGroup.innerHTML = `
+        <circle cx="82" cy="100" r="5" fill="#0f172a" />
+        <circle cx="118" cy="100" r="5" fill="#0f172a" />`;
+      mouthGroup.innerHTML = `<path d="M 88 118 Q 100 132 112 118" stroke="#0f172a" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+      extrasGroup.innerHTML = `
+        <!-- Headphones -->
+        <path d="M 52 100 C 52 50, 148 50, 148 100" stroke="var(--accent-color)" stroke-width="6" fill="none"/>
+        <rect x="44" y="90" width="12" height="24" rx="5" fill="var(--accent-color)"/>
+        <rect x="144" y="90" width="12" height="24" rx="5" fill="var(--accent-color)"/>`;
+    } else if (moodState === "pumped") {
+      eyesGroup.innerHTML = `
+        <path d="M 75 96 L 90 102" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M 125 96 L 110 102" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="83" cy="103" r="4" fill="#0f172a" />
+        <circle cx="117" cy="103" r="4" fill="#0f172a" />`;
+      mouthGroup.innerHTML = `<ellipse cx="100" cy="122" rx="10" ry="6" fill="#0f172a" />`;
+      extrasGroup.innerHTML = `
+        <!-- Sweatband & Workout Drops -->
+        <rect x="58" y="76" width="84" height="10" rx="4" fill="var(--accent-color)" />
+        <path d="M 146 100 Q 150 108 146 112 Q 142 108 146 100" fill="#38bdf8" />`;
+    } else if (moodState === "concerned") {
+      eyesGroup.innerHTML = `
+        <circle cx="80" cy="98" r="8" fill="#none" stroke="#0f172a" stroke-width="2.5"/>
+        <circle cx="80" cy="98" r="3" fill="#0f172a"/>
+        <circle cx="120" cy="98" r="8" fill="#none" stroke="#0f172a" stroke-width="2.5"/>
+        <circle cx="120" cy="98" r="3" fill="#0f172a"/>
+        <path d="M 72 86 L 88 92" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+        <path d="M 128 86 L 112 92" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>`;
+      mouthGroup.innerHTML = `<path d="M 90 126 Q 100 116 110 126" stroke="#0f172a" stroke-width="3.5" fill="none" stroke-linecap="round"/>`;
+      extrasGroup.innerHTML = `
+        <!-- Alert Signs -->
+        <text x="145" y="75" fill="#ef4444" font-size="22" font-weight="900">!</text>
+        <text x="48" y="75" fill="#ef4444" font-size="22" font-weight="900">!</text>`;
+    }
+  }
+
   function updateAnalysis() {
     const bpm = getActiveBPM();
     const targetMode = document.getElementById('target-mode').value;
@@ -460,9 +612,10 @@ HTML_TEMPLATE = """
     const genreEl = document.getElementById('suggested-genre');
     const recBtn = document.getElementById('rec-btn');
 
-    // Default state: Pure black background & front panel with subtle gray glow
+    // Default state pre-input: Sleeping pose with black aesthetic
     if (!bpm || bpm <= 0) {
       applyDynamicTheme("#000000", "#000000", "#050505", "#38bdf8", "rgba(255, 255, 255, 0.08)", "#64748b");
+      setAvatarMood("sleeping");
       moodEl.innerText = "Waiting for Data...";
       genreEl.innerText = "Waiting for Selection...";
       recBtn.disabled = true;
@@ -476,33 +629,39 @@ HTML_TEMPLATE = """
     recBtn.className = "btn-submit";
     recBtn.innerText = "Open YouTube Music Recommendation →";
 
-    // Dynamic Full-Page Theme & Text Shifts
+    // Dynamic Avatar Mood & Color State Machine
     if (bpm < 55) {
-      // Low BPM Alert (Purple)
+      // Low BPM Alert (Purple Concerned Avatar)
       applyDynamicTheme("#140924", "#1b0c30", "#0e061a", "#c084fc", "rgba(192, 132, 252, 0.45)", "#e9d5ff");
+      setAvatarMood("concerned");
       moodEl.innerText = "Critically Low BPM (< 55)";
       genreEl.innerText = "Seek Medical Attention";
     } else if (bpm >= 55 && bpm <= 66) {
-      // Relaxed (Deep Ocean Blue)
+      // Relaxed Sleeping / Calm Avatar (Deep Blue)
       applyDynamicTheme("#051329", "#081d3d", "#030e21", "#38bdf8", "rgba(56, 189, 248, 0.4)", "#93c5fd");
+      setAvatarMood("sleeping");
       moodEl.innerText = "Relaxed / Peaceful (55-66 BPM)";
     } else if (bpm >= 67 && bpm <= 82) {
-      // Calm Baseline (Forest Green)
+      // Normal Vibe Avatar with Headphones (Green)
       applyDynamicTheme("#031c14", "#062b1f", "#02120d", "#22c55e", "rgba(34, 197, 94, 0.4)", "#86efac");
+      setAvatarMood("vibe");
       moodEl.innerText = "Calm Baseline / Normal Vibe";
     } else if (bpm >= 83 && bpm <= 170) {
-      // High Energy (Orange / Warm Amber)
+      // High BPM Workout / Pumped Avatar (Orange)
       applyDynamicTheme("#240909", "#360e0e", "#190505", "#f97316", "rgba(249, 115, 22, 0.45)", "#fdba74");
+      setAvatarMood("pumped");
       moodEl.innerText = "High Energy / Excited / Stressed";
     } else if (bpm > 170 && bpm <= 200) {
-      // BPM High Caution (Deep Red)
+      // Extreme High BPM Concerned Avatar (Red)
       applyDynamicTheme("#330505", "#4a0808", "#240303", "#ef4444", "rgba(239, 68, 68, 0.5)", "#fca5a5");
+      setAvatarMood("concerned");
       moodEl.innerText = "BPM Too High (171-200 BPM)";
       genreEl.innerText = "Rest & Soothing Melody";
       return;
     } else {
-      // > 200 Critical Medical Emergency (Crimson Red)
+      // Critical Medical Emergency Avatar (Crimson Red)
       applyDynamicTheme("#450000", "#5e0000", "#300000", "#dc2626", "rgba(220, 38, 38, 0.75)", "#fecaca");
+      setAvatarMood("concerned");
       moodEl.innerText = "DANGER: BPM > 200";
       genreEl.innerText = "Seek Medical Help!";
       return;
