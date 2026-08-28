@@ -1,17 +1,18 @@
+import time
 from flask import Flask, request, jsonify, render_template_string
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
 
-# Global memory storage for incoming ESP32 data
 latest_biometrics = {
-    "bpm": 72,
-    "source": "ESP32",
-    "status": "System Active"
+    "bpm": None,
+    "last_seen": 0,
+    "connected": False
 }
 
-# --- EMBEDDED DYNAMIC HTML FRONTEND ---
+TIMEOUT_SECONDS = 5
+
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -41,7 +42,7 @@ HTML_TEMPLATE = """
       box-shadow: 0 20px 40px rgba(0,0,0,0.6);
       display: flex;
       flex-direction: column;
-      gap: 24px;
+      gap: 20px;
     }
 
     .header-bar {
@@ -55,55 +56,82 @@ HTML_TEMPLATE = """
       border: 1px solid #1c2b4e;
     }
 
-    .status-live {
-      color: #22c55e;
+    .status-badge {
       font-weight: bold;
+      padding: 4px 8px;
+      border-radius: 6px;
     }
 
-    .mode-select-header {
-      background: #1c2b4e;
-      color: #38bdf8;
-      border: 1px solid #38bdf8;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 13px;
-    }
+    .status-live { color: #22c55e; background: rgba(34, 197, 94, 0.1); }
+    .status-offline { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
 
     .bpm-container {
       text-align: center;
       background: #090d1a;
-      padding: 28px;
+      padding: 24px;
       border-radius: 16px;
       border: 1px solid #1e2942;
     }
 
     .bpm-value {
-      font-size: 64px;
+      font-size: 56px;
       font-weight: bold;
       color: #38bdf8;
-      margin: 8px 0;
+      margin: 4px 0;
+    }
+
+    .bpm-waiting {
+      font-size: 24px;
+      color: #64748b;
+    }
+
+    .info-panel {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      background: #0a0f1d;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid #1c2b4e;
+    }
+
+    .info-box {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .info-title {
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .info-value {
+      font-size: 15px;
+      font-weight: bold;
+      color: #38bdf8;
     }
 
     canvas {
       background: #020617;
       border-radius: 8px;
       width: 100%;
-      height: 70px;
-      margin-top: 12px;
+      height: 60px;
+      margin-top: 8px;
     }
 
     .controls-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      gap: 16px;
     }
 
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
 
     label {
@@ -113,19 +141,18 @@ HTML_TEMPLATE = """
       letter-spacing: 1px;
     }
 
-    select, button {
-      padding: 14px 16px;
+    select, input, button {
+      padding: 12px 14px;
       border-radius: 10px;
       border: none;
       font-size: 14px;
       font-weight: bold;
     }
 
-    select {
+    select, input {
       background: #1c2b4e;
       color: white;
       outline: none;
-      cursor: pointer;
     }
 
     .btn-submit {
@@ -134,12 +161,52 @@ HTML_TEMPLATE = """
       color: #0b1329;
       font-size: 16px;
       cursor: pointer;
-      margin-top: 10px;
+      margin-top: 6px;
       transition: background 0.2s ease;
     }
 
     .btn-submit:hover {
       background: #7dd3fc;
+    }
+
+    .btn-disabled {
+      background: #334155 !important;
+      color: #94a3b8 !important;
+      cursor: not-allowed !important;
+    }
+
+    /* Choice Modal Styling */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .modal-content {
+      background: #131e3a;
+      border: 1px solid #38bdf8;
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .modal-btn {
+      width: 100%;
+      margin-top: 10px;
+      cursor: pointer;
+      background: #1c2b4e;
+      color: #ffffff;
+      border: 1px solid #38bdf8;
+    }
+
+    .modal-btn:hover {
+      background: #38bdf8;
+      color: #0b1329;
     }
   </style>
 </head>
@@ -148,29 +215,43 @@ HTML_TEMPLATE = """
 <div class="dashboard-card">
   
   <div class="header-bar">
-    <span>ESP32 STATUS: <span class="status-live">LIVE [GPIO 13]</span></span>
+    <span>ESP32 SENSOR: <span id="esp-status-badge" class="status-badge status-offline">WAITING FOR ESP32</span></span>
     <div>
-      <span style="color: #94a3b8; margin-right: 8px;">ACTIVE SYSTEM:</span>
-      <select class="mode-select-header" id="system-mode">
-        <option value="Mode 1: Manual Pulse">Mode 1: Manual Pulse</option>
-        <option value="Mode 2: ESP32 Touch" selected>Mode 2: ESP32 Touch</option>
-        <option value="Mode 3: Continuous Stream">Mode 3: Continuous Stream</option>
+      <span style="color: #94a3b8; margin-right: 8px;">INPUT MODE:</span>
+      <select class="mode-select-header" id="input-mode-select" onchange="toggleInputMode()">
+        <option value="esp32" selected>ESP32 Hardware Stream</option>
+        <option value="manual">Manual BPM Input</option>
       </select>
     </div>
   </div>
 
   <div class="bpm-container">
     <div style="font-size: 12px; color: #94a3b8; font-weight: bold; letter-spacing: 1.5px;">BIOMETRIC STREAM</div>
-    <div class="bpm-value" id="bpm-val">-- <span style="font-size: 24px;">BPM</span></div>
-    <canvas id="ecgCanvas" width="600" height="70"></canvas>
+    <div class="bpm-value" id="bpm-val"><span class="bpm-waiting">Touch ESP32 Sensor...</span></div>
+    
+    <div id="manual-input-container" style="display: none; margin-top: 10px;">
+      <input type="number" id="manual-bpm-field" placeholder="Enter BPM (e.g. 75)" min="40" max="200" oninput="updateAnalysis()" style="width: 200px; text-align: center;">
+    </div>
+
+    <canvas id="ecgCanvas" width="600" height="60"></canvas>
+  </div>
+
+  <!-- Live Mood & Recommendation Status Panel -->
+  <div class="info-panel">
+    <div class="info-box">
+      <span class="info-title">DETECTED MOOD STATE</span>
+      <span class="info-value" id="detected-mood">Waiting for Data...</span>
+    </div>
+    <div class="info-box">
+      <span class="info-title">RECOMMENDED GENRE</span>
+      <span class="info-value" id="suggested-genre">Waiting for Selection...</span>
+    </div>
   </div>
 
   <div class="controls-grid">
-    
-    <!-- Language Selection -->
     <div class="form-group">
       <label for="lang-select">SELECT MUSIC LANGUAGE</label>
-      <select id="lang-select">
+      <select id="lang-select" onchange="updateAnalysis()">
         <option value="Tamil">Tamil</option>
         <option value="International">International</option>
         <option value="Hindi">Hindi</option>
@@ -179,22 +260,34 @@ HTML_TEMPLATE = """
       </select>
     </div>
 
-    <!-- Biomatch Target Mode (2 Target Modes) -->
     <div class="form-group">
       <label for="target-mode">BIOMATCH TARGET MODE</label>
-      <select id="target-mode">
-        <option value="change">Change My Mood</option>
+      <select id="target-mode" onchange="updateAnalysis()">
         <option value="maintain">Maintain My Mood</option>
+        <option value="change">Change My Mood</option>
       </select>
     </div>
 
-    <button class="btn-submit" onclick="generateYouTubeRecommendation()">Open YouTube Music Recommendation →</button>
+    <button id="rec-btn" class="btn-submit btn-disabled" onclick="handleRecommendationClick()" disabled>Waiting for Valid Input...</button>
   </div>
 
 </div>
 
+<!-- High BPM Choice Modal -->
+<div class="modal-overlay" id="highBpmModal">
+  <div class="modal-content">
+    <h3 style="margin-top:0; color:#38bdf8;">High BPM Detected!</h3>
+    <p style="font-size:14px; color:#94a3b8;">You selected <b>Maintain My Mood</b> with a high heart rate. Which vibe do you prefer?</p>
+    <button class="modal-btn" onclick="triggerSearch('motivational')">🔥 Motivational, Gym & Pump-up</button>
+    <button class="modal-btn" onclick="triggerSearch('breakup')">💔 Breakup & Soup Songs</button>
+  </div>
+</div>
+
 <script>
-  // Dynamic Canvas ECG Waveform Animation
+  let isHardwareConnected = false;
+  let espBpmValue = 0;
+  let activeInputMode = "esp32";
+
   const canvas = document.getElementById('ecgCanvas');
   const ctx = canvas.getContext('2d');
   let x = 0;
@@ -204,7 +297,8 @@ HTML_TEMPLATE = """
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     ctx.beginPath();
-    ctx.strokeStyle = '#38bdf8';
+    const activeState = (activeInputMode === 'esp32' && isHardwareConnected) || (activeInputMode === 'manual' && getActiveBPM() > 0);
+    ctx.strokeStyle = activeState ? '#38bdf8' : '#334155';
     ctx.lineWidth = 2;
     ctx.moveTo(x, canvas.height / 2);
     
@@ -212,7 +306,7 @@ HTML_TEMPLATE = """
     if (x > canvas.width) x = 0;
     
     let y = canvas.height / 2;
-    if (x % 60 > 25 && x % 60 < 35) {
+    if (activeState && x % 60 > 25 && x % 60 < 35) {
       y += (Math.random() - 0.5) * 40;
     }
     
@@ -222,51 +316,160 @@ HTML_TEMPLATE = """
   }
   drawECG();
 
-  // Polling backend endpoint for live ESP32 BPM values
+  function toggleInputMode() {
+    activeInputMode = document.getElementById('input-mode-select').value;
+    const manualContainer = document.getElementById('manual-input-container');
+    const bpmValDisplay = document.getElementById('bpm-val');
+
+    if (activeInputMode === 'manual') {
+      manualContainer.style.display = 'block';
+      bpmValDisplay.style.display = 'none';
+    } else {
+      manualContainer.style.display = 'none';
+      bpmValDisplay.style.display = 'block';
+    }
+    updateAnalysis();
+  }
+
+  function getActiveBPM() {
+    if (activeInputMode === 'manual') {
+      return parseInt(document.getElementById('manual-bpm-field').value) || 0;
+    }
+    return espBpmValue;
+  }
+
   async function pollESP32BPM() {
     try {
       const res = await fetch('/api/bpm');
       const data = await res.json();
       
-      if (data && data.bpm) {
-        document.getElementById('bpm-val').innerHTML = `${data.bpm} <span style="font-size: 24px;">BPM</span>`;
+      const badge = document.getElementById('esp-status-badge');
+      const bpmContainer = document.getElementById('bpm-val');
+
+      if (data && data.connected && data.bpm > 0) {
+        isHardwareConnected = true;
+        espBpmValue = data.bpm;
+
+        badge.className = 'status-badge status-live';
+        badge.innerText = 'LIVE [GPIO 13]';
+
+        if (activeInputMode === 'esp32') {
+          bpmContainer.innerHTML = `${data.bpm} <span style="font-size: 24px;">BPM</span>`;
+        }
+      } else {
+        isHardwareConnected = false;
+        espBpmValue = 0;
+
+        badge.className = 'status-badge status-offline';
+        badge.innerText = 'WAITING FOR ESP32';
+
+        if (activeInputMode === 'esp32') {
+          bpmContainer.innerHTML = `<span class="bpm-waiting">Touch ESP32 Sensor...</span>`;
+        }
       }
+      updateAnalysis();
     } catch (err) {
-      console.log("Polling ESP32 data...");
+      console.log("Polling error:", err);
     }
   }
+
   setInterval(pollESP32BPM, 1000);
 
-  // Direct YouTube Music Search Generator
-  function generateYouTubeRecommendation() {
+  function updateAnalysis() {
+    const bpm = getActiveBPM();
+    const targetMode = document.getElementById('target-mode').value;
+    const lang = document.getElementById('lang-select').value;
+    
+    const moodEl = document.getElementById('detected-mood');
+    const genreEl = document.getElementById('suggested-genre');
+    const recBtn = document.getElementById('rec-btn');
+
+    if (!bpm || bpm <= 0) {
+      moodEl.innerText = "Waiting for Data...";
+      genreEl.innerText = "Waiting for Selection...";
+      recBtn.disabled = true;
+      recBtn.className = "btn-submit btn-disabled";
+      recBtn.innerText = "Waiting for Valid Input...";
+      return;
+    }
+
+    recBtn.disabled = false;
+    recBtn.className = "btn-submit";
+    recBtn.innerText = "Open YouTube Music Recommendation →";
+
+    // 1. Detect Mood based on BPM
+    let moodText = "";
+    if (bpm >= 55 && bpm <= 66) moodText = "Relaxed / Peaceful (Low Heart Rate)";
+    else if (bpm >= 67 && bpm <= 82) moodText = "Calm Baseline / Normal Vibe";
+    else if (bpm >= 83 && bpm <= 170) moodText = "High Energy / Excited / Stressed";
+    else moodText = "Out of Range";
+
+    moodEl.innerText = moodText;
+
+    // 2. Derive Suggested Genre
+    let genreText = "";
+    if (targetMode === "maintain") {
+      if (bpm >= 55 && bpm <= 66) genreText = `${lang} Chill, Relaxing & Love Songs`;
+      else if (bpm >= 67 && bpm <= 82) genreText = `${lang} Normal Vibe & Folk Hits`;
+      else if (bpm >= 83 && bpm <= 170) genreText = `${lang} Gym Pump-up OR Breakup/Soup`;
+      else genreText = `${lang} Trending Music`;
+    } else {
+      if (bpm >= 55 && bpm <= 66) genreText = `${lang} Motivational Gym Pump-up`;
+      else if (bpm >= 67 && bpm <= 82) genreText = `${lang} Chill & Romantic Songs`;
+      else if (bpm >= 83 && bpm <= 170) genreText = `${lang} Soothing Deep Relaxation`;
+      else genreText = `${lang} Peaceful Music`;
+    }
+
+    genreEl.innerText = genreText;
+  }
+
+  function handleRecommendationClick() {
+    const bpm = getActiveBPM();
+    const targetMode = document.getElementById('target-mode').value;
+
+    // Ask user preference if maintaining high BPM
+    if (targetMode === "maintain" && bpm >= 83 && bpm <= 170) {
+      document.getElementById('highBpmModal').style.display = 'flex';
+    } else {
+      triggerSearch();
+    }
+  }
+
+  function triggerSearch(highBpmChoice = null) {
+    document.getElementById('highBpmModal').style.display = 'none';
+
     const lang = document.getElementById('lang-select').value;
     const targetMode = document.getElementById('target-mode').value;
-    
-    // Extract numerical heart rate
-    const bpmText = document.getElementById('bpm-val').innerText;
-    const bpm = parseInt(bpmText) || 72;
+    const bpm = getActiveBPM();
 
     let query = "";
 
-    if (targetMode === "change") {
-      // Logic for "Change My Mood": If BPM is high, fetch relaxing music. If low, fetch energetic music.
-      if (bpm > 85) {
-        query = `${lang} relaxing calm soothing music songs`;
+    if (targetMode === "maintain") {
+      if (bpm >= 55 && bpm <= 66) {
+        query = `${lang} chill relaxing love romantic songs`;
+      } else if (bpm >= 67 && bpm <= 82) {
+        query = `${lang} normal vibe folk upbeat hits`;
+      } else if (bpm >= 83 && bpm <= 170) {
+        if (highBpmChoice === "breakup") {
+          query = `${lang} breakup soup sad emotional songs`;
+        } else {
+          query = `${lang} motivational gym pump up workout songs`;
+        }
       } else {
-        query = `${lang} high energy upbeat workout songs`;
+        query = `${lang} trending music songs`;
       }
     } else {
-      // Logic for "Maintain My Mood": Match the current state directly
-      if (bpm > 85) {
-        query = `${lang} energetic high tempo party songs`;
-      } else if (bpm < 65) {
-        query = `${lang} deep relaxation ambient meditation music`;
+      if (bpm >= 55 && bpm <= 66) {
+        query = `${lang} motivational gym pump up workout songs`;
+      } else if (bpm >= 67 && bpm <= 82) {
+        query = `${lang} chill relaxing love romantic songs`;
+      } else if (bpm >= 83 && bpm <= 170) {
+        query = `${lang} deep relaxation calm soothing melodies`;
       } else {
-        query = `${lang} chill pleasant acoustic melody songs`;
+        query = `${lang} soothing peaceful songs`;
       }
     }
 
-    // Launch YouTube Music with targeted search query in a new tab
     const ytMusicUrl = `https://music.youtube.com/search?q=${encodeURIComponent(query)}`;
     window.open(ytMusicUrl, '_blank');
   }
@@ -276,26 +479,25 @@ HTML_TEMPLATE = """
 </html>
 """
 
-# --- FLASK API ROUTES ---
-
 @app.route('/')
 def home():
-    """Serves the main biometric dashboard interface"""
     return render_template_string(HTML_TEMPLATE)
 
 @app.route('/api/bpm', methods=['GET', 'POST'])
 def handle_bpm():
-    """Receives heart rate from ESP32 POST request and provides GET polling for UI"""
     global latest_biometrics
     
     if request.method == 'POST':
         data = request.get_json()
         if data and 'bpm' in data:
-            latest_biometrics['bpm'] = data['bpm']
-            if 'source' in data:
-                latest_biometrics['source'] = data['source']
+            latest_biometrics['bpm'] = int(data['bpm'])
+            latest_biometrics['last_seen'] = time.time()
+            latest_biometrics['connected'] = True
             return jsonify({"status": "success", "received": data['bpm']}), 200
         return jsonify({"status": "error", "message": "Invalid JSON payload"}), 400
+
+    is_active = (time.time() - latest_biometrics['last_seen']) < TIMEOUT_SECONDS
+    latest_biometrics['connected'] = is_active
 
     return jsonify(latest_biometrics)
 
