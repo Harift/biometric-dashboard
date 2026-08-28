@@ -420,7 +420,7 @@
     }
   }
 
-  // KURISU CANVAS DRAWING ENGINE
+  // ENHANCED ANIME CURVED KURISU RENDERER
   const kCanvas = document.getElementById('kurisuCanvas');
   const kCtx = kCanvas.getContext('2d');
   let frameCount = 0;
@@ -433,183 +433,201 @@
     kCtx.clearRect(0, 0, w, h);
 
     const breathY = Math.sin(frameCount * 0.05) * 2;
+    const headX = w / 2;
+    const headY = 120 + breathY;
 
-    // Hair Back
-    const hairGrad = kCtx.createLinearGradient(0, 50, 0, 400);
-    hairGrad.addColorStop(0, '#9e3319');
-    hairGrad.addColorStop(0.5, '#6e1d09');
+    // 1. Long Back Hair (Curved & Flowing)
+    const hairGrad = kCtx.createLinearGradient(0, 40, 0, 400);
+    hairGrad.addColorStop(0, '#a23214');
+    hairGrad.addColorStop(0.6, '#751a05');
     hairGrad.addColorStop(1, '#3b0d03');
 
     kCtx.fillStyle = hairGrad;
     kCtx.beginPath();
-    kCtx.moveTo(70, 120 + breathY);
-    kCtx.bezierCurveTo(20, 220, 20, 360, 45, 440);
-    kCtx.lineTo(295, 440);
-    kCtx.bezierCurveTo(320, 360, 320, 220, 270, 120 + breathY);
+    kCtx.moveTo(headX - 60, headY - 40);
+    kCtx.bezierCurveTo(headX - 140, headY + 50, headX - 130, 360, headX - 90, 440);
+    kCtx.lineTo(headX + 90, 440);
+    kCtx.bezierCurveTo(headX + 130, 360, headX + 140, headY + 50, headX + 60, headY - 40);
+    kCtx.closePath();
     kCtx.fill();
 
-    // Body & Clothes
-    kCtx.fillStyle = '#1e293b';
-    kCtx.fillRect(110, 360 + breathY, 120, 80);
-
-    kCtx.fillStyle = '#ffffff';
+    // 2. Curved Shoulders & Torso
+    kCtx.fillStyle = '#ffffff'; // White blouse
     kCtx.beginPath();
-    kCtx.moveTo(125, 230 + breathY);
-    kCtx.lineTo(215, 230 + breathY);
-    kCtx.lineTo(230, 440);
-    kCtx.lineTo(110, 440);
+    kCtx.moveTo(headX - 45, 230 + breathY);
+    kCtx.quadraticCurveTo(headX, 220 + breathY, headX + 45, 230 + breathY);
+    kCtx.lineTo(headX + 55, 440);
+    kCtx.lineTo(headX - 55, 440);
+    kCtx.closePath();
     kCtx.fill();
 
-    // Jacket
-    kCtx.fillStyle = '#a88151';
-    kCtx.beginPath();
-    kCtx.moveTo(60, 260 + breathY);
-    kCtx.lineTo(120, 250 + breathY);
-    kCtx.lineTo(110, 440);
-    kCtx.lineTo(30, 440);
-    kCtx.fill();
-
-    kCtx.beginPath();
-    kCtx.moveTo(280, 260 + breathY);
-    kCtx.lineTo(220, 250 + breathY);
-    kCtx.lineTo(230, 440);
-    kCtx.lineTo(310, 440);
-    kCtx.fill();
-
-    // Tie
-    const tieGrad = kCtx.createLinearGradient(0, 240, 0, 380);
-    tieGrad.addColorStop(0, '#ef4444');
-    tieGrad.addColorStop(1, '#7f1d1d');
+    // Slanted Tie
+    const tieGrad = kCtx.createLinearGradient(0, 230, 0, 360);
+    tieGrad.addColorStop(0, '#dc2626');
+    tieGrad.addColorStop(1, '#881337');
     kCtx.fillStyle = tieGrad;
     kCtx.beginPath();
-    kCtx.moveTo(164, 240 + breathY);
-    kCtx.lineTo(176, 240 + breathY);
-    kCtx.lineTo(182, 350 + breathY);
-    kCtx.lineTo(170, 370 + breathY);
-    kCtx.lineTo(158, 350 + breathY);
+    kCtx.moveTo(headX - 6, 230 + breathY);
+    kCtx.lineTo(headX + 6, 230 + breathY);
+    kCtx.lineTo(headX + 10, 320 + breathY);
+    kCtx.lineTo(headX, 345 + breathY);
+    kCtx.lineTo(headX - 10, 320 + breathY);
+    kCtx.closePath();
     kCtx.fill();
 
-    // Neck
-    kCtx.fillStyle = '#fbeee6';
-    kCtx.fillRect(150, 190 + breathY, 40, 50);
-
-    // Face
+    // Curved Open Jacket Slips
+    kCtx.fillStyle = '#9a7346';
+    // Left Jacket Side
     kCtx.beginPath();
-    kCtx.moveTo(110, 110 + breathY);
-    kCtx.bezierCurveTo(110, 210, 230, 210, 230, 110 + breathY);
-    kCtx.bezierCurveTo(230, 70, 110, 70, 110, 110 + breathY);
-    kCtx.fillStyle = '#fff4ee';
+    kCtx.moveTo(headX - 45, 230 + breathY);
+    kCtx.quadraticCurveTo(headX - 90, 240 + breathY, headX - 100, 320 + breathY);
+    kCtx.quadraticCurveTo(headX - 85, 400 + breathY, headX - 40, 440);
+    kCtx.lineTo(headX - 120, 440);
+    kCtx.quadraticCurveTo(headX - 125, 280, headX - 60, 225 + breathY);
+    kCtx.closePath();
     kCtx.fill();
 
-    // Blush
+    // Right Jacket Side
+    kCtx.beginPath();
+    kCtx.moveTo(headX + 45, 230 + breathY);
+    kCtx.quadraticCurveTo(headX + 90, 240 + breathY, headX + 100, 320 + breathY);
+    kCtx.quadraticCurveTo(headX + 85, 400 + breathY, headX + 40, 440);
+    kCtx.lineTo(headX + 120, 440);
+    kCtx.quadraticCurveTo(headX + 125, 280, headX + 60, 225 + breathY);
+    kCtx.closePath();
+    kCtx.fill();
+
+    // 3. Neck & Soft Chin Shape
+    kCtx.fillStyle = '#ffeedd';
+    kCtx.beginPath();
+    kCtx.moveTo(headX - 15, headY + 30);
+    kCtx.lineTo(headX + 15, headY + 30);
+    kCtx.lineTo(headX + 18, 230 + breathY);
+    kCtx.lineTo(headX - 18, 230 + breathY);
+    kCtx.closePath();
+    kCtx.fill();
+
+    // Face (Tapered Anime Jawline)
+    kCtx.beginPath();
+    kCtx.moveTo(headX - 50, headY - 20);
+    kCtx.quadraticCurveTo(headX - 52, headY + 30, headX - 25, headY + 60);
+    kCtx.quadraticCurveTo(headX, headY + 75, headX + 25, headY + 60);
+    kCtx.quadraticCurveTo(headX + 52, headY + 30, headX + 50, headY - 20);
+    kCtx.quadraticCurveTo(headX, headY - 60, headX - 50, headY - 20);
+    kCtx.fillStyle = '#fff4eb';
+    kCtx.fill();
+
+    // Soft Blush
     if (currentEmotion === 'tsundere' || currentEmotion === 'calm') {
-      kCtx.fillStyle = 'rgba(244, 63, 94, 0.35)';
+      kCtx.fillStyle = 'rgba(251, 113, 133, 0.35)';
       kCtx.beginPath();
-      kCtx.ellipse(135, 158 + breathY, 12, 6, 0, 0, Math.PI * 2);
-      kCtx.ellipse(205, 158 + breathY, 12, 6, 0, 0, Math.PI * 2);
+      kCtx.ellipse(headX - 25, headY + 22, 10, 5, 0, 0, Math.PI * 2);
+      kCtx.ellipse(headX + 25, headY + 22, 10, 5, 0, 0, Math.PI * 2);
       kCtx.fill();
     }
 
-    // Eyes
-    const drawEye = (cx, cy) => {
+    // 4. Eyes (Large Anime Oval Eyes with Highlights)
+    const drawAnimeEye = (cx, cy) => {
       kCtx.fillStyle = '#ffffff';
       kCtx.beginPath();
-      kCtx.ellipse(cx, cy, 14, 18, 0, 0, Math.PI * 2);
+      kCtx.ellipse(cx, cy, 12, 16, 0, 0, Math.PI * 2);
       kCtx.fill();
 
       const eyeGrad = kCtx.createLinearGradient(0, cy - 15, 0, cy + 15);
       eyeGrad.addColorStop(0, '#c084fc');
       eyeGrad.addColorStop(0.5, '#7e22ce');
-      eyeGrad.addColorStop(1, '#3b0764');
+      eyeGrad.addColorStop(1, '#2e1065');
       kCtx.fillStyle = eyeGrad;
       kCtx.beginPath();
-      kCtx.ellipse(cx, cy, 11, 15, 0, 0, Math.PI * 2);
+      kCtx.ellipse(cx, cy + 1, 9, 13, 0, 0, Math.PI * 2);
       kCtx.fill();
 
-      kCtx.fillStyle = '#1e1b4b';
+      kCtx.fillStyle = '#0f172a';
       kCtx.beginPath();
-      kCtx.arc(cx, cy, 5, 0, Math.PI * 2);
+      kCtx.ellipse(cx, cy + 3, 4, 6, 0, 0, Math.PI * 2);
       kCtx.fill();
 
       kCtx.fillStyle = '#ffffff';
       kCtx.beginPath();
-      kCtx.arc(cx - 4, cy - 6, 3.5, 0, Math.PI * 2);
+      kCtx.arc(cx - 3, cy - 5, 3.5, 0, Math.PI * 2);
+      kCtx.arc(cx + 3, cy + 4, 2, 0, Math.PI * 2);
       kCtx.fill();
     };
 
-    drawEye(140, 145 + breathY);
-    drawEye(200, 145 + breathY);
+    drawAnimeEye(headX - 22, headY + 5);
+    drawAnimeEye(headX + 22, headY + 5);
 
-    // Eyeliner
-    kCtx.strokeStyle = '#27272a';
+    // Eyeliner & Lashes
+    kCtx.strokeStyle = '#1e1b4b';
     kCtx.lineWidth = 3;
     kCtx.beginPath();
-    kCtx.moveTo(122, 134 + breathY);
-    kCtx.quadraticCurveTo(140, 126 + breathY, 156, 136 + breathY);
-    kCtx.moveTo(184, 136 + breathY);
-    kCtx.quadraticCurveTo(200, 126 + breathY, 218, 134 + breathY);
+    kCtx.moveTo(headX - 37, headY - 5);
+    kCtx.quadraticCurveTo(headX - 22, headY - 14, headX - 8, headY - 4);
+    kCtx.moveTo(headX + 8, headY - 4);
+    kCtx.quadraticCurveTo(headX + 22, headY - 14, headX + 37, headY - 5);
     kCtx.stroke();
 
     // Eyebrows
-    kCtx.strokeStyle = '#5a1807';
-    kCtx.lineWidth = 3;
-    kCtx.beginPath();
-
-    if (currentEmotion === 'tsundere') {
-      kCtx.moveTo(124, 122 + breathY);
-      kCtx.lineTo(154, 130 + breathY);
-      kCtx.moveTo(186, 130 + breathY);
-      kCtx.lineTo(216, 122 + breathY);
-    } else if (currentEmotion === 'concerned') {
-      kCtx.moveTo(124, 128 + breathY);
-      kCtx.lineTo(154, 120 + breathY);
-      kCtx.moveTo(186, 120 + breathY);
-      kCtx.lineTo(216, 128 + breathY);
-    } else {
-      kCtx.moveTo(124, 124 + breathY);
-      kCtx.quadraticCurveTo(140, 118 + breathY, 154, 124 + breathY);
-      kCtx.moveTo(186, 124 + breathY);
-      kCtx.quadraticCurveTo(200, 118 + breathY, 216, 124 + breathY);
-    }
-    kCtx.stroke();
-
-    // Mouth
-    kCtx.strokeStyle = '#be123c';
+    kCtx.strokeStyle = '#6c1a06';
     kCtx.lineWidth = 2.5;
     kCtx.beginPath();
 
     if (currentEmotion === 'tsundere') {
-      kCtx.arc(170, 178 + breathY, 6, 0.1 * Math.PI, 0.9 * Math.PI, false);
-    } else if (currentEmotion === 'calm') {
-      kCtx.moveTo(162, 175 + breathY);
-      kCtx.quadraticCurveTo(170, 182 + breathY, 178, 174 + breathY);
+      kCtx.moveTo(headX - 35, headY - 15);
+      kCtx.lineTo(headX - 10, headY - 8);
+      kCtx.moveTo(headX + 10, headY - 8);
+      kCtx.lineTo(headX + 35, headY - 15);
     } else if (currentEmotion === 'concerned') {
-      kCtx.arc(170, 178 + breathY, 5, 0, Math.PI * 2);
+      kCtx.moveTo(headX - 35, headY - 8);
+      kCtx.lineTo(headX - 10, headY - 16);
+      kCtx.moveTo(headX + 10, headY - 16);
+      kCtx.lineTo(headX + 35, headY - 8);
     } else {
-      kCtx.moveTo(164, 176 + breathY);
-      kCtx.lineTo(176, 176 + breathY);
+      kCtx.moveTo(headX - 34, headY - 14);
+      kCtx.quadraticCurveTo(headX - 22, headY - 20, headX - 10, headY - 14);
+      kCtx.moveTo(headX + 10, headY - 14);
+      kCtx.quadraticCurveTo(headX + 22, headY - 20, headX + 34, headY - 14);
     }
     kCtx.stroke();
 
-    // Hair Front Bangs
+    // Small Mouth
+    kCtx.strokeStyle = '#e11d48';
+    kCtx.lineWidth = 2;
+    kCtx.beginPath();
+    if (currentEmotion === 'tsundere') {
+      kCtx.arc(headX, headY + 38, 5, 0.1 * Math.PI, 0.9 * Math.PI, false);
+    } else if (currentEmotion === 'calm') {
+      kCtx.moveTo(headX - 8, headY + 36);
+      kCtx.quadraticCurveTo(headX, headY + 41, headX + 8, headY + 36);
+    } else {
+      kCtx.moveTo(headX - 6, headY + 38);
+      kCtx.lineTo(headX + 6, headY + 38);
+    }
+    kCtx.stroke();
+
+    // 5. Dynamic Curved Bangs & Side Locks
     kCtx.fillStyle = hairGrad;
+
+    // Center Bangs Split
     kCtx.beginPath();
-    kCtx.moveTo(110, 90 + breathY);
-    kCtx.bezierCurveTo(140, 140, 145, 90, 155, 135);
-    kCtx.bezierCurveTo(165, 85, 185, 140, 230, 90 + breathY);
-    kCtx.bezierCurveTo(220, 50, 120, 50, 110, 90 + breathY);
+    kCtx.moveTo(headX, headY - 25);
+    kCtx.quadraticCurveTo(headX - 20, headY - 5, headX - 30, headY + 15);
+    kCtx.quadraticCurveTo(headX - 12, headY - 10, headX, headY - 40);
+    kCtx.quadraticCurveTo(headX + 12, headY - 10, headX + 30, headY + 15);
+    kCtx.quadraticCurveTo(headX + 20, headY - 5, headX, headY - 25);
+    kCtx.fill();
+
+    // Long Side Locks
+    kCtx.beginPath();
+    kCtx.moveTo(headX - 45, headY - 25);
+    kCtx.bezierCurveTo(headX - 65, headY + 40, headX - 55, headY + 100, headX - 35, headY + 150);
+    kCtx.bezierCurveTo(headX - 50, headY + 90, headX - 45, headY + 20, headX - 35, headY - 30);
     kCtx.fill();
 
     kCtx.beginPath();
-    kCtx.moveTo(115, 100 + breathY);
-    kCtx.quadraticCurveTo(90, 180, 100, 290 + breathY);
-    kCtx.quadraticCurveTo(120, 200, 130, 120 + breathY);
-    kCtx.fill();
-
-    kCtx.beginPath();
-    kCtx.moveTo(225, 100 + breathY);
-    kCtx.quadraticCurveTo(250, 180, 240, 290 + breathY);
-    kCtx.quadraticCurveTo(220, 200, 210, 120 + breathY);
+    kCtx.moveTo(headX + 45, headY - 25);
+    kCtx.bezierCurveTo(headX + 65, headY + 40, headX + 55, headY + 100, headX + 35, headY + 150);
+    kCtx.bezierCurveTo(headX + 50, headY + 90, headX + 45, headY + 20, headX + 35, headY - 30);
     kCtx.fill();
 
     requestAnimationFrame(drawKurisu);
@@ -698,7 +716,6 @@
     window.open(`https://music.youtube.com/search?q=${encodeURIComponent(query)}`, '_blank');
   }
 
-  // Initialize scripts as soon as the DOM loads
   window.addEventListener('DOMContentLoaded', () => {
     drawECG();
     drawKurisu();
