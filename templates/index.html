@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BioSync - Dynamic Biometric Music</title>
+  <style>
+    :root {
+      --bg-color: #030712;
+      --card-bg: #090d16;
+      --container-bg: #030712;
+      --accent-color: #38bdf8;
+      --glow-color: rgba(56, 189, 248, 0.2);
+      --text-muted: #94a3b8;
+    }
+
+    @keyframes bgPulseGlow {
+      0% { box-shadow: inset 0 0 40px var(--glow-color); }
+      50% { box-shadow: inset 0 0 120px var(--glow-color); }
+      100% { box-shadow: inset 0 0 40px var(--glow-color); }
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+      position: relative;
+      transition: background-color 0.8s ease;
+      animation: bgPulseGlow 2.5s infinite ease-in-out;
+    }
+
+    .main-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 25px;
+      width: 95%;
+      max-width: 1150px;
+      margin: 20px auto;
+    }
+
+    .dashboard-card {
+      position: relative;
+      z-index: 10;
+      background: var(--card-bg);
+      border: 1px solid var(--accent-color);
+      border-radius: 20px;
+      flex: 1.2;
+      max-width: 650px;
+      padding: 28px;
+      backdrop-filter: blur(14px);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: all 0.8s ease;
+      box-shadow: 0 10px 35px rgba(0,0,0,0.85);
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 360px;
+      height: 520px;
+    }
+
+    #kurisuCanvas {
+      width: 340px;
+      height: 440px;
+      border-radius: 16px;
+      filter: drop-shadow(0 0 15px var(--accent-color));
+      transition: filter 0.8s ease;
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .avatar-dialog-box {
+      background: rgba(9, 13, 22, 0.95);
+      border: 1px solid var(--accent-color);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #ffffff;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      margin-bottom: 10px;
+      width: 90%;
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.5s ease;
+    }
+
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--container-bg);
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-size: 13px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.8s ease;
+    }
+
+    .status-badge {
+      font-weight: bold;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .status-live { color: #22c55e; background: rgba(34, 197, 94, 0.15); }
+    .status-offline { color: #ef4444; background: rgba(239, 68, 68, 0.15); }
+
+    .bpm-container {
+      text-align: center;
+      background: var(--container-bg);
+      padding: 18px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.8s ease;
+    }
+
+    .bpm-value {
+      font-size: 48px;
+      font-weight: bold;
+      color: var(--accent-color);
+      margin: 2px 0;
+      transition: color 0.5s ease;
+    }
+
+    .bpm-waiting {
+      font-size: 20px;
+      color: var(--text-muted);
+    }
+
+    .manual-bpm-box {
+      margin-top: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .manual-bpm-box input {
+      width: 140px;
+      text-align: center;
+      font-size: 16px;
+      padding: 8px 12px;
+    }
+
+    .info-panel {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      background: var(--container-bg);
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.8s ease;
+    }
+
+    .info-box {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .info-title {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .info-value {
+      font-size: 14px;
+      font-weight: bold;
+      color: var(--accent-color);
+      transition: color 0.5s ease;
+    }
+
+    #ecgCanvas {
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 8px;
+      width: 100%;
+      height: 50px;
+      margin-top: 6px;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    select, input, button {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      font-size: 13px;
+      font-weight: bold;
+      transition: all 0.5s ease;
+    }
+
+    select, input {
+      background: var(--container-bg);
+      color: #ffffff;
+      outline: none;
+    }
+
+    .btn-submit {
+      grid-column: span 2;
+      background: var(--accent-color);
+      color: #000000;
+      font-size: 15px;
+      cursor: pointer;
+      margin-top: 4px;
+      border: none;
+      transition: all 0.3s ease;
+    }
+
+    .btn-submit:hover {
+      filter: brightness(1.2);
+    }
+  </style>
+</head>
+<body>
+
+<div class="main-container">
+
+  <!-- DASHBOARD CARD -->
+  <div class="dashboard-card" id="main-card">
+    
+    <div class="header-bar">
+      <span>ESP32 SENSOR: <span id="esp-status-badge" class="status-badge status-offline">WAITING FOR ESP32</span></span>
+      <div>
+        <span style="color: var(--text-muted); margin-right: 6px;">INPUT MODE:</span>
+        <select class="mode-select-header" id="input-mode-select" onchange="toggleInputMode()">
+          <option value="manual" selected>Manual BPM Input</option>
+          <option value="esp32">ESP32 Hardware Stream</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="bpm-container">
+      <div style="font-size: 11px; color: var(--text-muted); font-weight: bold; letter-spacing: 1.5px;">BIOMETRIC STREAM</div>
+      
+      <!-- ESP32 DISPLAY -->
+      <div class="bpm-value" id="bpm-val-esp" style="display: none;">
+        <span class="bpm-waiting">Touch ESP32 Sensor...</span>
+      </div>
+      
+      <!-- MANUAL INPUT DISPLAY -->
+      <div class="manual-bpm-box" id="manual-input-container">
+        <label for="manual-bpm-field">ENTER BPM:</label>
+        <input type="number" id="manual-bpm-field" placeholder="e.g. 75" min="30" max="250" oninput="updateAnalysis()" value="75">
+      </div>
+
+      <canvas id="ecgCanvas" width="600" height="50"></canvas>
+    </div>
+
+    <div class="info-panel">
+      <div class="info-box">
+        <span class="info-title">DETECTED MOOD STATE</span>
+        <span class="info-value" id="detected-mood">Waiting for Data...</span>
+      </div>
+      <div class="info-box">
+        <span class="info-title">RECOMMENDED GENRE</span>
+        <span class="info-value" id="suggested-genre">Waiting for Selection...</span>
+      </div>
+    </div>
+
+    <div class="controls-grid">
+      <div class="form-group">
+        <label for="lang-select">SELECT MUSIC LANGUAGE</label>
+        <select id="lang-select" onchange="updateAnalysis()">
+          <option value="Tamil">Tamil</option>
+          <option value="International">International</option>
+          <option value="Hindi">Hindi</option>
+          <option value="Telugu">Telugu</option>
+          <option value="Malayalam">Malayalam</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="target-mode">BIOMATCH TARGET MODE</label>
+        <select id="target-mode" onchange="updateAnalysis()">
+          <option value="maintain">Maintain My Mood</option>
+          <option value="change">Change My Mood</option>
+        </select>
+      </div>
+
+      <button id="rec-btn" class="btn-submit" onclick="handleRecommendationClick()">Open YouTube Music Recommendation →</button>
+    </div>
+
+  </div>
+
+  <!-- KURISU CANVAS AVATAR -->
+  <div class="avatar-wrapper">
+    <div class="avatar-dialog-box" id="kurisu-dialog">"Enter your pulse or touch the sensor..."</div>
+    <canvas id="kurisuCanvas" width="340" height="440"></canvas>
+  </div>
+
+</div>
+
+<script>
+  let isHardwareConnected = false;
+  let espBpmValue = 0;
+  let activeInputMode = "manual";
+  let activeWaveColor = '#38bdf8';
+  let currentEmotion = "neutral";
+
+  // ECG Graph Logic
+  const canvas = document.getElementById('ecgCanvas');
+  const ctx = canvas.getContext('2d');
+  let x = 0;
+
+  function drawECG() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.beginPath();
+    const activeState = (activeInputMode === 'esp32' && isHardwareConnected) || (activeInputMode === 'manual' && getActiveBPM() > 0);
+    ctx.strokeStyle = activeState ? activeWaveColor : '#334155';
+    ctx.lineWidth = 2;
+    ctx.moveTo(x, canvas.height / 2);
+    
+    x += 4;
+    if (x > canvas.width) x = 0;
+    
+    let y = canvas.height / 2;
+    if (activeState && x % 60 > 25 && x % 60 < 35) {
+      y += (Math.random() - 0.5) * 35;
+    }
+    
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    requestAnimationFrame(drawECG);
+  }
+
+  function toggleInputMode() {
+    activeInputMode = document.getElementById('input-mode-select').value;
+    const manualContainer = document.getElementById('manual-input-container');
+    const espBpmDisplay = document.getElementById('bpm-val-esp');
+
+    if (activeInputMode === 'manual') {
+      manualContainer.style.display = 'flex';
+      espBpmDisplay.style.display = 'none';
+    } else {
+      manualContainer.style.display = 'none';
+      espBpmDisplay.style.display = 'block';
+    }
+    updateAnalysis();
+  }
+
+  function getActiveBPM() {
+    if (activeInputMode === 'manual') {
+      return parseInt(document.getElementById('manual-bpm-field').value) || 0;
+    }
+    return espBpmValue;
+  }
+
+  async function pollESP32BPM() {
+    try {
+      const res = await fetch('/api/bpm');
+      const data = await res.json();
+      
+      const badge = document.getElementById('esp-status-badge');
+      const espBpmDisplay = document.getElementById('bpm-val-esp');
+
+      if (data && data.connected && data.bpm > 0) {
+        isHardwareConnected = true;
+        espBpmValue = data.bpm;
+
+        badge.className = 'status-badge status-live';
+        badge.innerText = 'LIVE [GPIO 13]';
+
+        if (activeInputMode === 'esp32') {
+          espBpmDisplay.innerHTML = `${data.bpm} <span style="font-size: 20px;">BPM</span>`;
+        }
+      } else {
+        isHardwareConnected = false;
+        espBpmValue = 0;
+
+        badge.className = 'status-badge status-offline';
+        badge.innerText = 'WAITING FOR ESP32';
+
+        if (activeInputMode === 'esp32') {
+          espBpmDisplay.innerHTML = `<span class="bpm-waiting">Touch ESP32 Sensor...</span>`;
+        }
+      }
+      updateAnalysis();
+    } catch (err) {
+      console.log("Polling error:", err);
+    }
+  }
+
+  // KURISU CANVAS DRAWING ENGINE
+  const kCanvas = document.getElementById('kurisuCanvas');
+  const kCtx = kCanvas.getContext('2d');
+  let frameCount = 0;
+
+  function drawKurisu() {
+    frameCount++;
+    const w = kCanvas.width;
+    const h = kCanvas.height;
+
+    kCtx.clearRect(0, 0, w, h);
+
+    const breathY = Math.sin(frameCount * 0.05) * 2;
+
+    // Hair Back
+    const hairGrad = kCtx.createLinearGradient(0, 50, 0, 400);
+    hairGrad.addColorStop(0, '#9e3319');
+    hairGrad.addColorStop(0.5, '#6e1d09');
+    hairGrad.addColorStop(1, '#3b0d03');
+
+    kCtx.fillStyle = hairGrad;
+    kCtx.beginPath();
+    kCtx.moveTo(70, 120 + breathY);
+    kCtx.bezierCurveTo(20, 220, 20, 360, 45, 440);
+    kCtx.lineTo(295, 440);
+    kCtx.bezierCurveTo(320, 360, 320, 220, 270, 120 + breathY);
+    kCtx.fill();
+
+    // Body & Clothes
+    kCtx.fillStyle = '#1e293b';
+    kCtx.fillRect(110, 360 + breathY, 120, 80);
+
+    kCtx.fillStyle = '#ffffff';
+    kCtx.beginPath();
+    kCtx.moveTo(125, 230 + breathY);
+    kCtx.lineTo(215, 230 + breathY);
+    kCtx.lineTo(230, 440);
+    kCtx.lineTo(110, 440);
+    kCtx.fill();
+
+    // Jacket
+    kCtx.fillStyle = '#a88151';
+    kCtx.beginPath();
+    kCtx.moveTo(60, 260 + breathY);
+    kCtx.lineTo(120, 250 + breathY);
+    kCtx.lineTo(110, 440);
+    kCtx.lineTo(30, 440);
+    kCtx.fill();
+
+    kCtx.beginPath();
+    kCtx.moveTo(280, 260 + breathY);
+    kCtx.lineTo(220, 250 + breathY);
+    kCtx.lineTo(230, 440);
+    kCtx.lineTo(310, 440);
+    kCtx.fill();
+
+    // Tie
+    const tieGrad = kCtx.createLinearGradient(0, 240, 0, 380);
+    tieGrad.addColorStop(0, '#ef4444');
+    tieGrad.addColorStop(1, '#7f1d1d');
+    kCtx.fillStyle = tieGrad;
+    kCtx.beginPath();
+    kCtx.moveTo(164, 240 + breathY);
+    kCtx.lineTo(176, 240 + breathY);
+    kCtx.lineTo(182, 350 + breathY);
+    kCtx.lineTo(170, 370 + breathY);
+    kCtx.lineTo(158, 350 + breathY);
+    kCtx.fill();
+
+    // Neck
+    kCtx.fillStyle = '#fbeee6';
+    kCtx.fillRect(150, 190 + breathY, 40, 50);
+
+    // Face
+    kCtx.beginPath();
+    kCtx.moveTo(110, 110 + breathY);
+    kCtx.bezierCurveTo(110, 210, 230, 210, 230, 110 + breathY);
+    kCtx.bezierCurveTo(230, 70, 110, 70, 110, 110 + breathY);
+    kCtx.fillStyle = '#fff4ee';
+    kCtx.fill();
+
+    // Blush
+    if (currentEmotion === 'tsundere' || currentEmotion === 'calm') {
+      kCtx.fillStyle = 'rgba(244, 63, 94, 0.35)';
+      kCtx.beginPath();
+      kCtx.ellipse(135, 158 + breathY, 12, 6, 0, 0, Math.PI * 2);
+      kCtx.ellipse(205, 158 + breathY, 12, 6, 0, 0, Math.PI * 2);
+      kCtx.fill();
+    }
+
+    // Eyes
+    const drawEye = (cx, cy) => {
+      kCtx.fillStyle = '#ffffff';
+      kCtx.beginPath();
+      kCtx.ellipse(cx, cy, 14, 18, 0, 0, Math.PI * 2);
+      kCtx.fill();
+
+      const eyeGrad = kCtx.createLinearGradient(0, cy - 15, 0, cy + 15);
+      eyeGrad.addColorStop(0, '#c084fc');
+      eyeGrad.addColorStop(0.5, '#7e22ce');
+      eyeGrad.addColorStop(1, '#3b0764');
+      kCtx.fillStyle = eyeGrad;
+      kCtx.beginPath();
+      kCtx.ellipse(cx, cy, 11, 15, 0, 0, Math.PI * 2);
+      kCtx.fill();
+
+      kCtx.fillStyle = '#1e1b4b';
+      kCtx.beginPath();
+      kCtx.arc(cx, cy, 5, 0, Math.PI * 2);
+      kCtx.fill();
+
+      kCtx.fillStyle = '#ffffff';
+      kCtx.beginPath();
+      kCtx.arc(cx - 4, cy - 6, 3.5, 0, Math.PI * 2);
+      kCtx.fill();
+    };
+
+    drawEye(140, 145 + breathY);
+    drawEye(200, 145 + breathY);
+
+    // Eyeliner
+    kCtx.strokeStyle = '#27272a';
+    kCtx.lineWidth = 3;
+    kCtx.beginPath();
+    kCtx.moveTo(122, 134 + breathY);
+    kCtx.quadraticCurveTo(140, 126 + breathY, 156, 136 + breathY);
+    kCtx.moveTo(184, 136 + breathY);
+    kCtx.quadraticCurveTo(200, 126 + breathY, 218, 134 + breathY);
+    kCtx.stroke();
+
+    // Eyebrows
+    kCtx.strokeStyle = '#5a1807';
+    kCtx.lineWidth = 3;
+    kCtx.beginPath();
+
+    if (currentEmotion === 'tsundere') {
+      kCtx.moveTo(124, 122 + breathY);
+      kCtx.lineTo(154, 130 + breathY);
+      kCtx.moveTo(186, 130 + breathY);
+      kCtx.lineTo(216, 122 + breathY);
+    } else if (currentEmotion === 'concerned') {
+      kCtx.moveTo(124, 128 + breathY);
+      kCtx.lineTo(154, 120 + breathY);
+      kCtx.moveTo(186, 120 + breathY);
+      kCtx.lineTo(216, 128 + breathY);
+    } else {
+      kCtx.moveTo(124, 124 + breathY);
+      kCtx.quadraticCurveTo(140, 118 + breathY, 154, 124 + breathY);
+      kCtx.moveTo(186, 124 + breathY);
+      kCtx.quadraticCurveTo(200, 118 + breathY, 216, 124 + breathY);
+    }
+    kCtx.stroke();
+
+    // Mouth
+    kCtx.strokeStyle = '#be123c';
+    kCtx.lineWidth = 2.5;
+    kCtx.beginPath();
+
+    if (currentEmotion === 'tsundere') {
+      kCtx.arc(170, 178 + breathY, 6, 0.1 * Math.PI, 0.9 * Math.PI, false);
+    } else if (currentEmotion === 'calm') {
+      kCtx.moveTo(162, 175 + breathY);
+      kCtx.quadraticCurveTo(170, 182 + breathY, 178, 174 + breathY);
+    } else if (currentEmotion === 'concerned') {
+      kCtx.arc(170, 178 + breathY, 5, 0, Math.PI * 2);
+    } else {
+      kCtx.moveTo(164, 176 + breathY);
+      kCtx.lineTo(176, 176 + breathY);
+    }
+    kCtx.stroke();
+
+    // Hair Front Bangs
+    kCtx.fillStyle = hairGrad;
+    kCtx.beginPath();
+    kCtx.moveTo(110, 90 + breathY);
+    kCtx.bezierCurveTo(140, 140, 145, 90, 155, 135);
+    kCtx.bezierCurveTo(165, 85, 185, 140, 230, 90 + breathY);
+    kCtx.bezierCurveTo(220, 50, 120, 50, 110, 90 + breathY);
+    kCtx.fill();
+
+    kCtx.beginPath();
+    kCtx.moveTo(115, 100 + breathY);
+    kCtx.quadraticCurveTo(90, 180, 100, 290 + breathY);
+    kCtx.quadraticCurveTo(120, 200, 130, 120 + breathY);
+    kCtx.fill();
+
+    kCtx.beginPath();
+    kCtx.moveTo(225, 100 + breathY);
+    kCtx.quadraticCurveTo(250, 180, 240, 290 + breathY);
+    kCtx.quadraticCurveTo(220, 200, 210, 120 + breathY);
+    kCtx.fill();
+
+    requestAnimationFrame(drawKurisu);
+  }
+
+  function applyDynamicTheme(bgColor, cardBg, containerBg, accentColor, glowColor, textMuted) {
+    const root = document.documentElement;
+    root.style.setProperty('--bg-color', bgColor);
+    root.style.setProperty('--card-bg', cardBg);
+    root.style.setProperty('--container-bg', containerBg);
+    root.style.setProperty('--accent-color', accentColor);
+    root.style.setProperty('--glow-color', glowColor);
+    root.style.setProperty('--text-muted', textMuted);
+
+    activeWaveColor = accentColor;
+  }
+
+  function setKurisuDialogue(emotion, text) {
+    currentEmotion = emotion;
+    document.getElementById('kurisu-dialog').innerText = text;
+  }
+
+  function updateAnalysis() {
+    const bpm = getActiveBPM();
+    const targetMode = document.getElementById('target-mode').value;
+    const lang = document.getElementById('lang-select').value;
+    
+    const moodEl = document.getElementById('detected-mood');
+    const genreEl = document.getElementById('suggested-genre');
+
+    if (!bpm || bpm <= 0) {
+      applyDynamicTheme("#030712", "#090d16", "#030712", "#38bdf8", "rgba(56, 189, 248, 0.15)", "#64748b");
+      setKurisuDialogue("neutral", '"Waiting for pulse data... Don\'t keep me waiting."');
+      moodEl.innerText = "Waiting for Data...";
+      genreEl.innerText = "Waiting for Selection...";
+      return;
+    }
+
+    if (bpm < 55) {
+      applyDynamicTheme("#140924", "#1b0c30", "#0e061a", "#c084fc", "rgba(192, 132, 252, 0.45)", "#e9d5ff");
+      setKurisuDialogue("concerned", '"Hey! Your heart rate is dangerously low! Are you okay?!"');
+      moodEl.innerText = "Critically Low BPM (< 55)";
+      genreEl.innerText = "Rest & Ambient Sounds";
+    } else if (bpm >= 55 && bpm <= 82) {
+      applyDynamicTheme("#031c14", "#062b1f", "#02120d", "#22c55e", "rgba(34, 197, 94, 0.4)", "#86efac");
+      setKurisuDialogue("calm", '"Pulse is steady. A relaxed state of mind suits you well."');
+      moodEl.innerText = "Calm Baseline / Peaceful Vibe";
+    } else if (bpm >= 83 && bpm <= 170) {
+      applyDynamicTheme("#240909", "#360e0e", "#190505", "#f97316", "rgba(249, 115, 22, 0.45)", "#fdba74");
+      setKurisuDialogue("tsundere", '"B-Baka! Why is your heart beating so fast all of a sudden?!"');
+      moodEl.innerText = "High Energy / Excited / Stressed";
+    } else {
+      applyDynamicTheme("#330505", "#4a0808", "#240303", "#ef4444", "rgba(239, 68, 68, 0.5)", "#fca5a5");
+      setKurisuDialogue("concerned", '"Warning: Extreme heart rate detected! Take a deep breath!"');
+      moodEl.innerText = "BPM Too High (> 170 BPM)";
+      genreEl.innerText = "Rest & Medical Caution";
+      return;
+    }
+
+    let genreText = "";
+    if (targetMode === "maintain") {
+      if (bpm >= 55 && bpm <= 82) genreText = `${lang} Chill & Soft Hits`;
+      else genreText = `${lang} Motivational Workout Tracks`;
+    } else {
+      if (bpm >= 55 && bpm <= 82) genreText = `${lang} Energetic Workout Tracks`;
+      else genreText = `${lang} Deep Relaxation Melodies`;
+    }
+
+    genreEl.innerText = genreText;
+  }
+
+  function handleRecommendationClick() {
+    const lang = document.getElementById('lang-select').value;
+    const targetMode = document.getElementById('target-mode').value;
+    const bpm = getActiveBPM();
+
+    let query = `${lang} mood relaxation music`;
+    if (targetMode === "maintain") {
+      if (bpm >= 55 && bpm <= 82) query = `${lang} chill relaxing love romantic songs`;
+      else query = `${lang} motivational gym pump up songs`;
+    } else {
+      if (bpm >= 55 && bpm <= 82) query = `${lang} motivational gym pump up workout songs`;
+      else query = `${lang} deep relaxation calm soothing melodies`;
+    }
+
+    window.open(`https://music.youtube.com/search?q=${encodeURIComponent(query)}`, '_blank');
+  }
+
+  // Initialize scripts as soon as the DOM loads
+  window.addEventListener('DOMContentLoaded', () => {
+    drawECG();
+    drawKurisu();
+    toggleInputMode();
+    setInterval(pollESP32BPM, 1000);
+  });
+</script>
+
+</body>
+</html>
