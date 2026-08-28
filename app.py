@@ -19,7 +19,7 @@ HTML_TEMPLATE = """
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BioSync - Biometric Music Recommender</title>
+  <title>BioSync - Dynamic Biometric Music</title>
   <style>
     body {
       background-color: #0b1329;
@@ -30,16 +30,18 @@ HTML_TEMPLATE = """
       align-items: center;
       min-height: 100vh;
       margin: 0;
+      transition: background-color 0.8s ease; /* Smooth full BG transition */
     }
 
     .dashboard-card {
-      background: #131e3a;
-      border: 1px solid #1e2942;
+      background: rgba(19, 30, 58, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 20px;
       width: 90%;
       max-width: 750px;
       padding: 32px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      backdrop-filter: blur(10px);
       display: flex;
       flex-direction: column;
       gap: 20px;
@@ -49,11 +51,11 @@ HTML_TEMPLATE = """
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #0a0f1d;
+      background: rgba(10, 15, 29, 0.7);
       padding: 14px 20px;
       border-radius: 12px;
       font-size: 14px;
-      border: 1px solid #1c2b4e;
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .status-badge {
@@ -67,10 +69,10 @@ HTML_TEMPLATE = """
 
     .bpm-container {
       text-align: center;
-      background: #090d1a;
+      background: rgba(9, 13, 26, 0.7);
       padding: 24px;
       border-radius: 16px;
-      border: 1px solid #1e2942;
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .bpm-value {
@@ -78,6 +80,7 @@ HTML_TEMPLATE = """
       font-weight: bold;
       color: #38bdf8;
       margin: 4px 0;
+      transition: color 0.5s ease;
     }
 
     .bpm-waiting {
@@ -89,10 +92,10 @@ HTML_TEMPLATE = """
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
-      background: #0a0f1d;
+      background: rgba(10, 15, 29, 0.7);
       padding: 16px;
       border-radius: 12px;
-      border: 1px solid #1c2b4e;
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .info-box {
@@ -112,10 +115,11 @@ HTML_TEMPLATE = """
       font-size: 15px;
       font-weight: bold;
       color: #38bdf8;
+      transition: color 0.5s ease;
     }
 
     canvas {
-      background: #020617;
+      background: rgba(2, 6, 23, 0.8);
       border-radius: 8px;
       width: 100%;
       height: 60px;
@@ -162,11 +166,11 @@ HTML_TEMPLATE = """
       font-size: 16px;
       cursor: pointer;
       margin-top: 6px;
-      transition: background 0.2s ease;
+      transition: all 0.3s ease;
     }
 
     .btn-submit:hover {
-      background: #7dd3fc;
+      filter: brightness(1.15);
     }
 
     .btn-disabled {
@@ -175,7 +179,6 @@ HTML_TEMPLATE = """
       cursor: not-allowed !important;
     }
 
-    /* Choice Modal Styling */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -236,7 +239,6 @@ HTML_TEMPLATE = """
     <canvas id="ecgCanvas" width="600" height="60"></canvas>
   </div>
 
-  <!-- Live Mood & Recommendation Status Panel -->
   <div class="info-panel">
     <div class="info-box">
       <span class="info-title">DETECTED MOOD STATE</span>
@@ -273,10 +275,9 @@ HTML_TEMPLATE = """
 
 </div>
 
-<!-- High BPM Choice Modal -->
 <div class="modal-overlay" id="highBpmModal">
   <div class="modal-content">
-    <h3 style="margin-top:0; color:#38bdf8;">High BPM Detected!</h3>
+    <h3 style="margin-top:0; color:#ef4444;">High BPM Detected!</h3>
     <p style="font-size:14px; color:#94a3b8;">You selected <b>Maintain My Mood</b> with a high heart rate. Which vibe do you prefer?</p>
     <button class="modal-btn" onclick="triggerSearch('motivational')">🔥 Motivational, Gym & Pump-up</button>
     <button class="modal-btn" onclick="triggerSearch('breakup')">💔 Breakup & Soup Songs</button>
@@ -287,6 +288,7 @@ HTML_TEMPLATE = """
   let isHardwareConnected = false;
   let espBpmValue = 0;
   let activeInputMode = "esp32";
+  let activeWaveColor = '#38bdf8';
 
   const canvas = document.getElementById('ecgCanvas');
   const ctx = canvas.getContext('2d');
@@ -298,7 +300,7 @@ HTML_TEMPLATE = """
     
     ctx.beginPath();
     const activeState = (activeInputMode === 'esp32' && isHardwareConnected) || (activeInputMode === 'manual' && getActiveBPM() > 0);
-    ctx.strokeStyle = activeState ? '#38bdf8' : '#334155';
+    ctx.strokeStyle = activeState ? activeWaveColor : '#334155';
     ctx.lineWidth = 2;
     ctx.moveTo(x, canvas.height / 2);
     
@@ -383,13 +385,16 @@ HTML_TEMPLATE = """
     const moodEl = document.getElementById('detected-mood');
     const genreEl = document.getElementById('suggested-genre');
     const recBtn = document.getElementById('rec-btn');
+    const bpmValEl = document.getElementById('bpm-val');
 
     if (!bpm || bpm <= 0) {
+      document.body.style.backgroundColor = "#0b1329"; // Default dark bg
       moodEl.innerText = "Waiting for Data...";
       genreEl.innerText = "Waiting for Selection...";
       recBtn.disabled = true;
       recBtn.className = "btn-submit btn-disabled";
       recBtn.innerText = "Waiting for Valid Input...";
+      activeWaveColor = '#334155';
       return;
     }
 
@@ -397,16 +402,33 @@ HTML_TEMPLATE = """
     recBtn.className = "btn-submit";
     recBtn.innerText = "Open YouTube Music Recommendation →";
 
-    // 1. Detect Mood based on BPM
-    let moodText = "";
-    if (bpm >= 55 && bpm <= 66) moodText = "Relaxed / Peaceful (Low Heart Rate)";
-    else if (bpm >= 67 && bpm <= 82) moodText = "Calm Baseline / Normal Vibe";
-    else if (bpm >= 83 && bpm <= 170) moodText = "High Energy / Excited / Stressed";
-    else moodText = "Out of Range";
+    // Dynamic Full Page Background & Accent Colors
+    if (bpm >= 55 && bpm <= 66) {
+      document.body.style.backgroundColor = "#0a192f"; // Calm Blue
+      activeWaveColor = "#38bdf8";
+      bpmValEl.style.color = "#38bdf8";
+      moodEl.style.color = "#38bdf8";
+      recBtn.style.background = "#38bdf8";
+      moodEl.innerText = "Relaxed / Peaceful (Low BPM)";
+    } else if (bpm >= 67 && bpm <= 82) {
+      document.body.style.backgroundColor = "#06231a"; // Balanced Green
+      activeWaveColor = "#22c55e";
+      bpmValEl.style.color = "#22c55e";
+      moodEl.style.color = "#22c55e";
+      recBtn.style.background = "#22c55e";
+      moodEl.innerText = "Calm Baseline / Normal Vibe";
+    } else if (bpm >= 83 && bpm <= 170) {
+      document.body.style.backgroundColor = "#2a0e0e"; // Energetic Red/Orange
+      activeWaveColor = "#ef4444";
+      bpmValEl.style.color = "#ef4444";
+      moodEl.style.color = "#ef4444";
+      recBtn.style.background = "#ef4444";
+      moodEl.innerText = "High Energy / Excited / Stressed";
+    } else {
+      document.body.style.backgroundColor = "#0b1329";
+      moodEl.innerText = "Out of Range";
+    }
 
-    moodEl.innerText = moodText;
-
-    // 2. Derive Suggested Genre
     let genreText = "";
     if (targetMode === "maintain") {
       if (bpm >= 55 && bpm <= 66) genreText = `${lang} Chill, Relaxing & Love Songs`;
@@ -427,7 +449,6 @@ HTML_TEMPLATE = """
     const bpm = getActiveBPM();
     const targetMode = document.getElementById('target-mode').value;
 
-    // Ask user preference if maintaining high BPM
     if (targetMode === "maintain" && bpm >= 83 && bpm <= 170) {
       document.getElementById('highBpmModal').style.display = 'flex';
     } else {
