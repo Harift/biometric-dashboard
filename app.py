@@ -22,7 +22,7 @@ HTML_TEMPLATE = """
   <title>BioSync - Dynamic Biometric Music</title>
   <style>
     body {
-      background-color: #0b1329;
+      background-color: #000000; /* Default Pitch-Black Background */
       color: #ffffff;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       display: flex;
@@ -30,7 +30,7 @@ HTML_TEMPLATE = """
       align-items: center;
       min-height: 100vh;
       margin: 0;
-      transition: background-color 0.8s ease; /* Smooth full BG transition */
+      transition: background-color 0.8s ease;
     }
 
     .dashboard-card {
@@ -40,7 +40,7 @@ HTML_TEMPLATE = """
       width: 90%;
       max-width: 750px;
       padding: 32px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.8);
       backdrop-filter: blur(10px);
       display: flex;
       flex-direction: column;
@@ -179,11 +179,12 @@ HTML_TEMPLATE = """
       cursor: not-allowed !important;
     }
 
+    /* Modal Styling */
     .modal-overlay {
       display: none;
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.75);
+      background: rgba(0, 0, 0, 0.85);
       justify-content: center;
       align-items: center;
       z-index: 100;
@@ -191,7 +192,7 @@ HTML_TEMPLATE = """
 
     .modal-content {
       background: #131e3a;
-      border: 1px solid #38bdf8;
+      border: 2px solid #ef4444;
       border-radius: 16px;
       padding: 24px;
       max-width: 400px;
@@ -200,16 +201,19 @@ HTML_TEMPLATE = """
 
     .modal-btn {
       width: 100%;
-      margin-top: 10px;
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 8px;
       cursor: pointer;
       background: #1c2b4e;
       color: #ffffff;
-      border: 1px solid #38bdf8;
+      border: 1px solid #ef4444;
+      font-weight: bold;
     }
 
     .modal-btn:hover {
-      background: #38bdf8;
-      color: #0b1329;
+      background: #ef4444;
+      color: #ffffff;
     }
   </style>
 </head>
@@ -233,7 +237,7 @@ HTML_TEMPLATE = """
     <div class="bpm-value" id="bpm-val"><span class="bpm-waiting">Touch ESP32 Sensor...</span></div>
     
     <div id="manual-input-container" style="display: none; margin-top: 10px;">
-      <input type="number" id="manual-bpm-field" placeholder="Enter BPM (e.g. 75)" min="40" max="200" oninput="updateAnalysis()" style="width: 200px; text-align: center;">
+      <input type="number" id="manual-bpm-field" placeholder="Enter BPM (e.g. 75)" min="30" max="220" oninput="updateAnalysis()" style="width: 200px; text-align: center;">
     </div>
 
     <canvas id="ecgCanvas" width="600" height="60"></canvas>
@@ -275,12 +279,32 @@ HTML_TEMPLATE = """
 
 </div>
 
+<!-- Maintain High BPM Choice Modal -->
 <div class="modal-overlay" id="highBpmModal">
   <div class="modal-content">
     <h3 style="margin-top:0; color:#ef4444;">High BPM Detected!</h3>
     <p style="font-size:14px; color:#94a3b8;">You selected <b>Maintain My Mood</b> with a high heart rate. Which vibe do you prefer?</p>
-    <button class="modal-btn" onclick="triggerSearch('motivational')">🔥 Motivational, Gym & Pump-up</button>
-    <button class="modal-btn" onclick="triggerSearch('breakup')">💔 Breakup & Soup Songs</button>
+    <button class="modal-btn" style="border-color:#38bdf8;" onclick="triggerSearch('motivational')">🔥 Motivational, Gym & Pump-up</button>
+    <button class="modal-btn" style="border-color:#38bdf8;" onclick="triggerSearch('breakup')">💔 Breakup & Soup Songs</button>
+  </div>
+</div>
+
+<!-- Warning Modal: BPM Too Low -->
+<div class="modal-overlay" id="lowBpmWarningModal">
+  <div class="modal-content">
+    <h2 style="margin-top:0; color:#ef4444;">⚠️ ALERT</h2>
+    <p style="font-size:18px; color:#ffffff; font-weight:bold;">BPM is critically low (< 55 BPM).</p>
+    <p style="font-size:15px; color:#f87171;">Please seek medical attention immediately!</p>
+    <button class="modal-btn" onclick="closeModal('lowBpmWarningModal')">Acknowledge & Dismiss</button>
+  </div>
+</div>
+
+<!-- Warning Modal: BPM Too High -->
+<div class="modal-overlay" id="extremeBpmWarningModal">
+  <div class="modal-content">
+    <h2 style="margin-top:0; color:#ef4444;">⚠️ BPM TOO HIGH</h2>
+    <p style="font-size:16px; color:#ffffff; font-weight:bold;">Your heart rate is above 170 BPM. Please take rest!</p>
+    <button class="modal-btn" onclick="playMelodyAndClose()">Relax with Calming Melody →</button>
   </div>
 </div>
 
@@ -288,7 +312,7 @@ HTML_TEMPLATE = """
   let isHardwareConnected = false;
   let espBpmValue = 0;
   let activeInputMode = "esp32";
-  let activeWaveColor = '#38bdf8';
+  let activeWaveColor = '#334155';
 
   const canvas = document.getElementById('ecgCanvas');
   const ctx = canvas.getContext('2d');
@@ -387,9 +411,11 @@ HTML_TEMPLATE = """
     const recBtn = document.getElementById('rec-btn');
     const bpmValEl = document.getElementById('bpm-val');
 
+    // Keep black theme until valid input is available
     if (!bpm || bpm <= 0) {
-      document.body.style.backgroundColor = "#0b1329"; // Default dark bg
+      document.body.style.backgroundColor = "#000000";
       moodEl.innerText = "Waiting for Data...";
+      moodEl.style.color = "#38bdf8";
       genreEl.innerText = "Waiting for Selection...";
       recBtn.disabled = true;
       recBtn.className = "btn-submit btn-disabled";
@@ -402,31 +428,45 @@ HTML_TEMPLATE = """
     recBtn.className = "btn-submit";
     recBtn.innerText = "Open YouTube Music Recommendation →";
 
-    // Dynamic Full Page Background & Accent Colors
-    if (bpm >= 55 && bpm <= 66) {
-      document.body.style.backgroundColor = "#0a192f"; // Calm Blue
+    // Dynamic Color Palette & Range Detection
+    if (bpm < 55) {
+      document.body.style.backgroundColor = "#1e102a";
+      activeWaveColor = "#a855f7";
+      bpmValEl.style.color = "#a855f7";
+      moodEl.style.color = "#a855f7";
+      recBtn.style.background = "#a855f7";
+      moodEl.innerText = "Critically Low BPM (< 55)";
+      genreEl.innerText = "Medical Attention Recommended";
+    } else if (bpm >= 55 && bpm <= 66) {
+      document.body.style.backgroundColor = "#0a192f";
       activeWaveColor = "#38bdf8";
       bpmValEl.style.color = "#38bdf8";
       moodEl.style.color = "#38bdf8";
       recBtn.style.background = "#38bdf8";
-      moodEl.innerText = "Relaxed / Peaceful (Low BPM)";
+      moodEl.innerText = "Relaxed / Peaceful (55-66 BPM)";
     } else if (bpm >= 67 && bpm <= 82) {
-      document.body.style.backgroundColor = "#06231a"; // Balanced Green
+      document.body.style.backgroundColor = "#06231a";
       activeWaveColor = "#22c55e";
       bpmValEl.style.color = "#22c55e";
       moodEl.style.color = "#22c55e";
       recBtn.style.background = "#22c55e";
       moodEl.innerText = "Calm Baseline / Normal Vibe";
     } else if (bpm >= 83 && bpm <= 170) {
-      document.body.style.backgroundColor = "#2a0e0e"; // Energetic Red/Orange
+      document.body.style.backgroundColor = "#2a0e0e";
       activeWaveColor = "#ef4444";
       bpmValEl.style.color = "#ef4444";
       moodEl.style.color = "#ef4444";
       recBtn.style.background = "#ef4444";
       moodEl.innerText = "High Energy / Excited / Stressed";
     } else {
-      document.body.style.backgroundColor = "#0b1329";
-      moodEl.innerText = "Out of Range";
+      document.body.style.backgroundColor = "#3b0707";
+      activeWaveColor = "#dc2626";
+      bpmValEl.style.color = "#dc2626";
+      moodEl.style.color = "#dc2626";
+      recBtn.style.background = "#dc2626";
+      moodEl.innerText = "BPM Too High (> 170 BPM)";
+      genreEl.innerText = "Rest & Soothing Melody";
+      return;
     }
 
     let genreText = "";
@@ -434,12 +474,10 @@ HTML_TEMPLATE = """
       if (bpm >= 55 && bpm <= 66) genreText = `${lang} Chill, Relaxing & Love Songs`;
       else if (bpm >= 67 && bpm <= 82) genreText = `${lang} Normal Vibe & Folk Hits`;
       else if (bpm >= 83 && bpm <= 170) genreText = `${lang} Gym Pump-up OR Breakup/Soup`;
-      else genreText = `${lang} Trending Music`;
     } else {
       if (bpm >= 55 && bpm <= 66) genreText = `${lang} Motivational Gym Pump-up`;
       else if (bpm >= 67 && bpm <= 82) genreText = `${lang} Chill & Romantic Songs`;
       else if (bpm >= 83 && bpm <= 170) genreText = `${lang} Soothing Deep Relaxation`;
-      else genreText = `${lang} Peaceful Music`;
     }
 
     genreEl.innerText = genreText;
@@ -449,15 +487,30 @@ HTML_TEMPLATE = """
     const bpm = getActiveBPM();
     const targetMode = document.getElementById('target-mode').value;
 
-    if (targetMode === "maintain" && bpm >= 83 && bpm <= 170) {
+    if (bpm < 55) {
+      document.getElementById('lowBpmWarningModal').style.display = 'flex';
+    } else if (bpm > 170) {
+      document.getElementById('extremeBpmWarningModal').style.display = 'flex';
+    } else if (targetMode === "maintain" && bpm >= 83 && bpm <= 170) {
       document.getElementById('highBpmModal').style.display = 'flex';
     } else {
       triggerSearch();
     }
   }
 
+  function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+  }
+
+  function playMelodyAndClose() {
+    closeModal('extremeBpmWarningModal');
+    const lang = document.getElementById('lang-select').value;
+    const query = `${lang} deep relaxation soothing flute instrumental melodies`;
+    window.open(`https://music.youtube.com/search?q=${encodeURIComponent(query)}`, '_blank');
+  }
+
   function triggerSearch(highBpmChoice = null) {
-    document.getElementById('highBpmModal').style.display = 'none';
+    closeModal('highBpmModal');
 
     const lang = document.getElementById('lang-select').value;
     const targetMode = document.getElementById('target-mode').value;
@@ -476,8 +529,6 @@ HTML_TEMPLATE = """
         } else {
           query = `${lang} motivational gym pump up workout songs`;
         }
-      } else {
-        query = `${lang} trending music songs`;
       }
     } else {
       if (bpm >= 55 && bpm <= 66) {
@@ -486,8 +537,6 @@ HTML_TEMPLATE = """
         query = `${lang} chill relaxing love romantic songs`;
       } else if (bpm >= 83 && bpm <= 170) {
         query = `${lang} deep relaxation calm soothing melodies`;
-      } else {
-        query = `${lang} soothing peaceful songs`;
       }
     }
 
