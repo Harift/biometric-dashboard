@@ -1,195 +1,259 @@
-from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import Optional
+from flask import Flask, request, jsonify, render_template_string
+from flask_cors import CORS
 
-app = FastAPI()
+app = Flask(__name__)
+CORS(app)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-current_data = {
-    "bpm": 0,
-    "source": "None"
+# Global memory storage for incoming ESP32 data
+latest_biometrics = {
+    "bpm": 72,
+    "source": "ESP32",
+    "status": "System Active"
 }
 
-class BPMData(BaseModel):
-    bpm: int
-    source: Optional[str] = "Manual Entry"
+# --- EMBEDDED DYNAMIC HTML FRONTEND ---
+HTML_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BioSync - Biometric Music Recommender</title>
+  <style>
+    body {
+      background-color: #0b1329;
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
 
-@app.post("/api/bpm")
-async def update_bpm(data: BPMData):
-    current_data["bpm"] = data.bpm
-    current_data["source"] = data.source or "ESP32 Sensor"
-    return {"status": "success", "data": current_data}
+    .dashboard-card {
+      background: #131e3a;
+      border: 1px solid #1e2942;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 480px;
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
 
-@app.get("/api/bpm")
-async def get_bpm():
-    return current_data
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #0a0f1d;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      border: 1px solid #1c2b4e;
+    }
 
-@app.get("/", response_class=HTMLResponse)
-async def read_root():
-    return """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Biometric Music Recommender</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background-color: #121212; color: white; padding: 20px; }
-            .card { background-color: #1e1e1e; padding: 20px; border-radius: 12px; margin: 15px auto; max-width: 450px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-            button { background-color: #1db954; color: white; border: none; padding: 10px 18px; font-size: 15px; font-weight: bold; border-radius: 20px; cursor: pointer; margin: 5px; }
-            button:hover { background-color: #1ed760; }
-            .mode-btn { background-color: #333; }
-            .active-mode { background-color: #1db954 !important; }
-            input, select { padding: 10px; font-size: 15px; border-radius: 8px; border: none; width: 70%; margin: 8px 0; background-color: #2a2a2a; color: white; text-align: center; }
-            .bpm-display { font-size: 52px; font-weight: bold; margin: 10px 0; }
-            .normal { color: #1db954; }
-            .elevated { color: #ff4d4d; }
-            .yt-btn { display: inline-block; background-color: #ff0000; color: white; padding: 12px 24px; text-decoration: none; font-weight: bold; border-radius: 25px; margin-top: 15px; }
-            .yt-btn:hover { background-color: #cc0000; }
-        </style>
-    </head>
-    <body>
-        <h1>Biometric Music Recommender</h1>
-        
-        <div>
-            <button id="btn-mode1" class="mode-btn active-mode" onclick="setMode('manual')">Mode 1: Manual Entry</button>
-            <button id="btn-mode2" class="mode-btn" onclick="setMode('esp32')">Mode 2: ESP32 Stream</button>
-        </div>
+    .status-live {
+      color: #22c55e;
+      font-weight: bold;
+    }
 
-        <!-- Preferences Section -->
-        <div class="card">
-            <h3>Music Preferences</h3>
-            <label>Language Preference:</label><br>
-            <select id="language" onchange="updateRecommendation()">
-                <option value="English">English</option>
-                <option value="Tamil">Tamil</option>
-                <option value="Hindi">Hindi</option>
-                <option value="Malayalam">Malayalam</option>
-                <option value="Telugu">Telugu</option>
-            </select>
-            <br><br>
-            <label>Mood Strategy:</label><br>
-            <select id="strategy" onchange="updateRecommendation()">
-                <option value="Match">Match Heart Rate (Maintain Vibe)</option>
-                <option value="Regulate">Regulate Heart Rate (Calm / Boost)</option>
-            </select>
-        </div>
+    .bpm-container {
+      text-align: center;
+      background: #090d1a;
+      padding: 24px;
+      border-radius: 16px;
+      border: 1px solid #1e2942;
+    }
 
-        <!-- Input Section -->
-        <div id="manual-section" class="card">
-            <h3>Mode 1: Manual Input</h3>
-            <input type="number" id="manual-bpm" placeholder="Enter BPM (e.g. 75)">
-            <br>
-            <button onclick="submitManualBPM()">Submit Reading</button>
-        </div>
+    .bpm-value {
+      font-size: 56px;
+      font-weight: bold;
+      color: #38bdf8;
+      margin: 8px 0;
+    }
 
-        <div id="esp32-section" class="card" style="display:none;">
-            <h3>Mode 2: ESP32 Sensor Stream</h3>
-            <p style="color: #aaa;">Listening for live metrics from ESP32...</p>
-        </div>
+    canvas {
+      background: #020617;
+      border-radius: 8px;
+      width: 100%;
+      height: 60px;
+      margin-top: 10px;
+    }
 
-        <!-- Live Status & Recommendation Output -->
-        <div class="card">
-            <h3>Live Biometric Status</h3>
-            <div id="bpm-value" class="bpm-display normal">-- BPM</div>
-            <p id="bpm-state" style="font-size: 18px; font-weight: bold;">State: Idle</p>
-            <p id="source-value" style="color: #888;">Source: Waiting for input</p>
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
 
-            <hr style="border: 0.5px solid #333; margin: 20px 0;">
+    label {
+      font-size: 13px;
+      color: #94a3b8;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
 
-            <h3>Recommended Playlist</h3>
-            <p id="music-recommendation" style="color: #bbb;">Enter BPM to generate recommendation.</p>
-            <a id="yt-link" href="#" target="_blank" class="yt-btn" style="display:none;">Open YouTube Music ➔</a>
-        </div>
+    select, button {
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: none;
+      font-size: 14px;
+      font-weight: bold;
+    }
 
-        <script>
-            let currentBPM = 0;
+    select {
+      background: #1c2b4e;
+      color: white;
+      outline: none;
+      cursor: pointer;
+    }
 
-            function setMode(mode) {
-                document.getElementById('manual-section').style.display = (mode === 'manual') ? 'block' : 'none';
-                document.getElementById('esp32-section').style.display = (mode === 'esp32') ? 'block' : 'none';
-                document.getElementById('btn-mode1').classList.toggle('active-mode', mode === 'manual');
-                document.getElementById('btn-mode2').classList.toggle('active-mode', mode === 'esp32');
-            }
+    .mode-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
 
-            async function submitManualBPM() {
-                const bpm = document.getElementById('manual-bpm').value;
-                if (!bpm) return alert("Please enter a valid BPM!");
-                
-                await fetch('/api/bpm', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ bpm: parseInt(bpm), source: "Manual Entry" })
-                });
-                
-                fetchBPM();
-            }
+    .btn-relax { background: #3b82f6; color: white; cursor: pointer; }
+    .btn-energize { background: #22c55e; color: black; cursor: pointer; }
+    .btn-submit { background: #38bdf8; color: black; cursor: pointer; }
 
-            async function fetchBPM() {
-                try {
-                    const res = await fetch('/api/bpm');
-                    const data = await res.json();
-                    if (data.bpm > 0) {
-                        currentBPM = data.bpm;
-                        document.getElementById('source-value').innerText = "Source: " + data.source;
-                        updateRecommendation();
-                    }
-                } catch(e) {}
-            }
+    button:hover { opacity: 0.9; }
+  </style>
+</head>
+<body>
 
-            function updateRecommendation() {
-                if (currentBPM === 0) return;
+<div class="dashboard-card">
+  
+  <!-- Header Connection Bar -->
+  <div class="header-bar">
+    <span>ESP32 STATUS: <span class="status-live">LIVE [GPIO 13]</span></span>
+    <span>MODE 2</span>
+  </div>
 
-                const lang = document.getElementById('language').value;
-                const strategy = document.getElementById('strategy').value;
-                const bpmDisplay = document.getElementById('bpm-value');
-                const stateDisplay = document.getElementById('bpm-state');
-                const recDisplay = document.getElementById('music-recommendation');
-                const ytBtn = document.getElementById('yt-link');
+  <!-- Real-Time Heart Rate & ECG Canvas Display -->
+  <div class="bpm-container">
+    <div style="font-size: 12px; color: #94a3b8; font-weight: bold; letter-spacing: 1px;">BIOMETRIC STREAM</div>
+    <div class="bpm-value" id="bpm-val">-- <span style="font-size: 20px;">BPM</span></div>
+    
+    <!-- Dynamic Waveform Graph -->
+    <canvas id="ecgCanvas" width="400" height="60"></canvas>
+  </div>
 
-                bpmDisplay.innerText = currentBPM + " BPM";
+  <!-- Step 1: Preferred Language Input -->
+  <div id="step-lang" class="form-group">
+    <label for="lang-select">SELECT MUSIC LANGUAGE</label>
+    <select id="lang-select">
+      <option value="English">English</option>
+      <option value="Hindi">Hindi</option>
+      <option value="Tamil">Tamil</option>
+      <option value="Spanish">Spanish</option>
+    </select>
+    <button class="btn-submit" onclick="confirmLanguage()">Continue →</button>
+  </div>
 
-                let targetTempo = "";
-                let query = "";
+  <!-- Step 2: Mode Targets (Hidden until step 1 complete) -->
+  <div id="step-mode" class="form-group" style="display: none;">
+    <label>SELECT AUDIO BIOMATCH TARGET</label>
+    <div class="mode-buttons">
+      <button class="btn-relax" onclick="fetchRecommendations('relax')">RELAX (Lower BPM)</button>
+      <button class="btn-energize" onclick="fetchRecommendations('energize')">ENERGIZE (Match BPM)</button>
+    </div>
+  </div>
 
-                if (currentBPM > 85) {
-                    bpmDisplay.className = "bpm-display elevated";
-                    stateDisplay.innerText = "State: Elevated / Stressed";
-                    if (strategy === "Regulate") {
-                        targetTempo = "Calming / Relaxing ambient beats to lower heart rate";
-                        query = lang + " calming relaxing music";
-                    } else {
-                        targetTempo = "High-energy Workout / Upbeat tracks matching pulse";
-                        query = lang + " high energy gym workout songs";
-                    }
-                } else {
-                    bpmDisplay.className = "bpm-display normal";
-                    stateDisplay.innerText = "State: Normal / Resting";
-                    if (strategy === "Regulate") {
-                        targetTempo = "Upbeat motivating tunes to boost energy";
-                        query = lang + " energetic mood booster songs";
-                    } else {
-                        targetTempo = "Chill / Acoustic Melodies matching resting pulse";
-                        query = lang + " chill acoustic lounge music";
-                    }
-                }
+</div>
 
-                recDisplay.innerText = targetTempo;
-                ytBtn.href = "https://music.youtube.com/search?q=" + encodeURIComponent(query);
-                ytBtn.style.display = "inline-block";
-            }
+<script>
+  let selectedLanguage = "English";
 
-            setInterval(fetchBPM, 3000);
-            fetchBPM();
-        </script>
-    </body>
-    </html>
-    """
+  // Canvas Oscilloscope Animation logic
+  const canvas = document.getElementById('ecgCanvas');
+  const ctx = canvas.getContext('2d');
+  let x = 0;
+
+  function drawECG() {
+    ctx.fillStyle = 'rgba(2, 6, 23, 0.15)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.beginPath();
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 2;
+    ctx.moveTo(x, canvas.height / 2);
+    
+    x += 3;
+    if (x > canvas.width) x = 0;
+    
+    let y = canvas.height / 2;
+    if (x % 50 > 20 && x % 50 < 30) {
+      y += (Math.random() - 0.5) * 35;
+    }
+    
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    requestAnimationFrame(drawECG);
+  }
+  drawECG();
+
+  function confirmLanguage() {
+    selectedLanguage = document.getElementById('lang-select').value;
+    document.getElementById('step-lang').style.display = 'none';
+    document.getElementById('step-mode').style.display = 'flex';
+  }
+
+  // Fetch real-time BPM sent by ESP32 via backend API
+  async function pollESP32BPM() {
+    try {
+      const res = await fetch('/api/bpm');
+      const data = await res.json();
+      
+      if (data && data.bpm) {
+        document.getElementById('bpm-val').innerHTML = `${data.bpm} <span style="font-size: 20px;">BPM</span>`;
+      }
+    } catch (err) {
+      console.log("Polling ESP32 data error:", err);
+    }
+  }
+
+  // Poll backend every 1000ms
+  setInterval(pollESP32BPM, 1000);
+
+  function fetchRecommendations(mode) {
+    const currentBpm = document.getElementById('bpm-val').innerText.split(' ')[0];
+    alert(`Triggering recommendations!\nMode: ${mode.toUpperCase()}\nLanguage: ${selectedLanguage}\nCurrent BPM: ${currentBpm}`);
+  }
+</script>
+
+</body>
+</html>
+"""
+
+# --- BACKEND SERVER ROUTES ---
+
+@app.route('/')
+def home():
+    """Serves the dashboard interface"""
+    return render_template_string(HTML_TEMPLATE)
+
+@app.route('/api/bpm', methods=['GET', 'POST'])
+def handle_bpm():
+    """Receives data from ESP32 (POST) and serves data to Frontend UI (GET)"""
+    global latest_biometrics
+    
+    if request.method == 'POST':
+        data = request.get_json()
+        if data and 'bpm' in data:
+            latest_biometrics['bpm'] = data['bpm']
+            if 'source' in data:
+                latest_biometrics['source'] = data['source']
+            return jsonify({"status": "success", "received": data['bpm']}), 200
+        return jsonify({"status": "error", "message": "Invalid JSON payload"}), 400
+
+    # GET request called by UI polling loop
+    return jsonify(latest_biometrics)
+
+if __name__ == '__main__':
+    # Flask port setup matching typical deployment defaults
+    app.run(host='0.0.0.0', port=5000)
