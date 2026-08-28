@@ -792,8 +792,6 @@
     const genreEl = document.getElementById('suggested-genre');
     const quoteEl = document.getElementById('dynamic-quote');
 
-    isBreakupOverride = false; // Reset override on fresh updates
-
     if (!bpm || bpm <= 0) {
       applyDynamicTheme("#030712", "#090d16", "#030712", "#38bdf8", "rgba(56, 189, 248, 0.15)", "#64748b");
       setKurisuDialogue('"Awaiting biometric stream synchronization..."');
@@ -802,6 +800,8 @@
       quoteEl.innerText = '"Awaiting biometric stream to generate neural advice..."';
       return;
     }
+
+    let previousCategory = activeCategory;
 
     if (bpm < 55) {
       applyDynamicTheme("#140924", "#1b0c30", "#0e061a", "#c084fc", "rgba(192, 132, 252, 0.45)", "#e9d5ff");
@@ -827,7 +827,12 @@
       activeCategory = "extreme";
     }
 
-    currentSelectedQuote = getRandomQuote(activeCategory);
+    // Assign a quote ONLY if the category changes or if no quote was previously selected
+    if (!currentSelectedQuote || previousCategory !== activeCategory) {
+      isBreakupOverride = false;
+      currentSelectedQuote = getRandomQuote(activeCategory);
+    }
+
     quoteEl.innerText = currentSelectedQuote;
 
     let genreText = "";
@@ -852,14 +857,14 @@
     quoteText.innerText = currentSelectedQuote;
     modal.style.display = 'flex';
 
-    // Show Breakup option if in Calm mode
-    if (activeCategory === "calm") {
+    // Show Breakup option for BOTH Calm AND High Energy BPM modes
+    if (activeCategory === "calm" || activeCategory === "highEnergy") {
       breakupBtn.style.display = 'inline-block';
     } else {
       breakupBtn.style.display = 'none';
     }
 
-    // Start 5-second countdown
+    // Start 5-second countdown lock
     proceedBtn.disabled = true;
     let timeLeft = 5;
 
