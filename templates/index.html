@@ -20,6 +20,10 @@
       100% { box-shadow: inset 0 0 40px var(--glow-color); }
     }
 
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       background-color: var(--bg-color);
       color: #ffffff;
@@ -29,6 +33,7 @@
       align-items: center;
       min-height: 100vh;
       margin: 0;
+      padding: 15px 0;
       overflow-x: hidden;
       position: relative;
       transition: background-color 0.8s ease;
@@ -37,12 +42,13 @@
 
     .main-container {
       display: flex;
+      flex-direction: row;
       align-items: center;
       justify-content: center;
       gap: 25px;
       width: 95%;
       max-width: 1150px;
-      margin: 20px auto;
+      margin: 0 auto;
     }
 
     .dashboard-card {
@@ -52,8 +58,9 @@
       border: 1px solid var(--accent-color);
       border-radius: 20px;
       flex: 1.2;
+      width: 100%;
       max-width: 650px;
-      padding: 28px;
+      padding: 24px;
       backdrop-filter: blur(14px);
       display: flex;
       flex-direction: column;
@@ -68,13 +75,16 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      width: 360px;
-      height: 520px;
+      width: 100%;
+      max-width: 360px;
+      height: auto;
     }
 
     #kurisuCanvas {
-      width: 340px;
-      height: 440px;
+      width: 100%;
+      max-width: 340px;
+      height: auto;
+      aspect-ratio: 340 / 440;
       border-radius: 16px;
       filter: drop-shadow(0 0 15px var(--accent-color));
       transition: filter 0.8s ease;
@@ -93,7 +103,7 @@
       text-align: center;
       box-shadow: 0 4px 15px rgba(0,0,0,0.5);
       margin-bottom: 10px;
-      width: 90%;
+      width: 100%;
       min-height: 38px;
       display: flex;
       align-items: center;
@@ -111,6 +121,8 @@
       font-size: 13px;
       border: 1px solid rgba(255, 255, 255, 0.08);
       transition: all 0.8s ease;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
     .status-badge {
@@ -132,7 +144,7 @@
     }
 
     .bpm-value {
-      font-size: 48px;
+      font-size: 44px;
       font-weight: bold;
       color: var(--accent-color);
       margin: 2px 0;
@@ -140,7 +152,7 @@
     }
 
     .bpm-waiting {
-      font-size: 20px;
+      font-size: 18px;
       color: var(--text-muted);
     }
 
@@ -154,7 +166,7 @@
     }
 
     .manual-bpm-box input {
-      width: 140px;
+      width: 120px;
       text-align: center;
       font-size: 16px;
       padding: 8px 12px;
@@ -225,6 +237,7 @@
       font-size: 13px;
       font-weight: bold;
       transition: all 0.5s ease;
+      width: 100%;
     }
 
     select, input {
@@ -246,6 +259,36 @@
 
     .btn-submit:hover {
       filter: brightness(1.2);
+    }
+
+    /* MOBILE MEDIA QUERY */
+    @media (max-width: 850px) {
+      .main-container {
+        flex-direction: column;
+        padding: 10px;
+        gap: 20px;
+      }
+
+      .dashboard-card {
+        padding: 18px;
+      }
+
+      .header-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .info-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .controls-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .btn-submit {
+        grid-column: span 1;
+      }
     }
   </style>
 </head>
@@ -465,7 +508,7 @@
     kCtx.fill();
     kCtx.stroke();
 
-    // Chest Biometric Heartbeat Core (Frequency Pulse Visual)
+    // Chest Biometric Heartbeat Core
     kCtx.save();
     kCtx.shadowColor = activeWaveColor;
     kCtx.shadowBlur = 15;
@@ -495,7 +538,7 @@
     kCtx.lineTo(headX + 12, headY + 60);
     kCtx.stroke();
 
-    // 4. Female Cyber Face Base (Refined Jawline)
+    // 4. Female Cyber Face Base
     kCtx.fillStyle = '#090d16';
     kCtx.beginPath();
     kCtx.moveTo(headX - 45, headY - 40);
@@ -528,7 +571,7 @@
     kCtx.arc(headX + 18 + (pulse * 0.5), headY - 2, 3, 0, Math.PI * 2);
     kCtx.fill();
 
-    // Lips Line (Minimalist Cyber Aesthetic)
+    // Lips Line
     kCtx.strokeStyle = activeWaveColor;
     kCtx.lineWidth = 2;
     kCtx.beginPath();
