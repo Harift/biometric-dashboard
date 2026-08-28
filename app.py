@@ -23,11 +23,18 @@ HTML_TEMPLATE = """
   <style>
     :root {
       --bg-color: #000000;
-      --card-bg: rgba(15, 23, 42, 0.9);
-      --container-bg: rgba(2, 6, 23, 0.7);
+      --card-bg: #000000;
+      --container-bg: #050505;
       --accent-color: #38bdf8;
-      --glow-color: rgba(56, 189, 248, 0.35);
+      --glow-color: rgba(56, 189, 248, 0.2);
       --text-muted: #94a3b8;
+    }
+
+    /* 2-Second Ambient Entire Background Glow */
+    @keyframes bgPulseGlow {
+      0% { box-shadow: inset 0 0 40px var(--glow-color); }
+      50% { box-shadow: inset 0 0 120px var(--glow-color); }
+      100% { box-shadow: inset 0 0 40px var(--glow-color); }
     }
 
     body {
@@ -40,13 +47,7 @@ HTML_TEMPLATE = """
       min-height: 100vh;
       margin: 0;
       transition: background-color 0.8s ease;
-    }
-
-    /* 2-Second Ambient Glow Animation */
-    @keyframes pulseGlow {
-      0% { box-shadow: 0 0 15px var(--glow-color); }
-      50% { box-shadow: 0 0 35px var(--glow-color); }
-      100% { box-shadow: 0 0 15px var(--glow-color); }
+      animation: bgPulseGlow 2s infinite ease-in-out;
     }
 
     .dashboard-card {
@@ -56,8 +57,6 @@ HTML_TEMPLATE = """
       width: 90%;
       max-width: 750px;
       padding: 32px;
-      box-shadow: 0 0 20px var(--glow-color);
-      animation: pulseGlow 2s infinite ease-in-out;
       backdrop-filter: blur(12px);
       display: flex;
       flex-direction: column;
@@ -140,7 +139,7 @@ HTML_TEMPLATE = """
     }
 
     canvas {
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(0, 0, 0, 0.6);
       border-radius: 8px;
       width: 100%;
       height: 60px;
@@ -197,8 +196,8 @@ HTML_TEMPLATE = """
     }
 
     .btn-disabled {
-      background: #334155 !important;
-      color: #94a3b8 !important;
+      background: #1e293b !important;
+      color: #64748b !important;
       cursor: not-allowed !important;
       border: none !important;
     }
@@ -208,14 +207,14 @@ HTML_TEMPLATE = """
       display: none;
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.85);
+      background: rgba(0, 0, 0, 0.9);
       justify-content: center;
       align-items: center;
       z-index: 100;
     }
 
     .modal-content {
-      background: #131e3a;
+      background: #090d16;
       border: 2px solid #ef4444;
       border-radius: 16px;
       padding: 24px;
@@ -229,7 +228,7 @@ HTML_TEMPLATE = """
       padding: 12px;
       border-radius: 8px;
       cursor: pointer;
-      background: #1c2b4e;
+      background: #111827;
       color: #ffffff;
       border: 1px solid #ef4444;
       font-weight: bold;
@@ -318,7 +317,7 @@ HTML_TEMPLATE = """
   <div class="modal-content" style="border-color: #a855f7;">
     <h2 style="margin-top:0; color:#a855f7;">⚠️ ALERT</h2>
     <p style="font-size:18px; color:#ffffff; font-weight:bold;">BPM is critically low (< 55 BPM).</p>
-    <p style="font-size:15px; color:#c084fc;">Please seek medical attention immediately!</p>
+    <p style="font-size:15px; color:#c084fc;">Seek Medical Attention!</p>
     <button class="modal-btn" style="border-color: #a855f7;" onclick="closeModal('lowBpmWarningModal')">Acknowledge & Dismiss</button>
   </div>
 </div>
@@ -334,11 +333,11 @@ HTML_TEMPLATE = """
 
 <!-- Critical Medical Help Emergency Modal (> 200 BPM) -->
 <div class="modal-overlay" id="criticalMedicalModal">
-  <div class="modal-content" style="border-color: #dc2626; background: #2a0808;">
-    <h1 style="margin-top:0; color:#dc2626;">🚨 CRITICAL MEDICAL ALERT</h1>
+  <div class="modal-content" style="border-color: #dc2626; background: #1a0303;">
+    <h1 style="margin-top:0; color:#dc2626;">🚨 CRITICAL ALERT</h1>
     <p style="font-size:18px; color:#ffffff; font-weight:bold;">BPM EXCEEDS 200!</p>
-    <p style="font-size:15px; color:#f87171;">Seek medical help immediately!</p>
-    <button class="modal-btn" style="border-color: #dc2626; background: #dc2626; color: white;" onclick="closeModal('criticalMedicalModal')">Emergency Acknowledged</button>
+    <p style="font-size:16px; color:#f87171; font-weight:bold;">Seek Medical Help!</p>
+    <button class="modal-btn" style="border-color: #dc2626; background: #dc2626; color: white;" onclick="closeModal('criticalMedicalModal')">Acknowledge Emergency</button>
   </div>
 </div>
 
@@ -353,7 +352,7 @@ HTML_TEMPLATE = """
   let x = 0;
 
   function drawECG() {
-    ctx.fillStyle = 'rgba(2, 6, 23, 0.15)';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     ctx.beginPath();
@@ -461,9 +460,9 @@ HTML_TEMPLATE = """
     const genreEl = document.getElementById('suggested-genre');
     const recBtn = document.getElementById('rec-btn');
 
-    // Pitch-black default state prior to receiving valid input
+    // Default state: Pure black background & front panel with subtle gray glow
     if (!bpm || bpm <= 0) {
-      applyDynamicTheme("#000000", "rgba(15, 23, 42, 0.9)", "rgba(2, 6, 23, 0.7)", "#38bdf8", "rgba(56, 189, 248, 0.2)", "#94a3b8");
+      applyDynamicTheme("#000000", "#000000", "#050505", "#38bdf8", "rgba(255, 255, 255, 0.08)", "#64748b");
       moodEl.innerText = "Waiting for Data...";
       genreEl.innerText = "Waiting for Selection...";
       recBtn.disabled = true;
@@ -477,35 +476,35 @@ HTML_TEMPLATE = """
     recBtn.className = "btn-submit";
     recBtn.innerText = "Open YouTube Music Recommendation →";
 
-    // Synchronized Color Themes (Background, Front Card, Accents & Glows)
+    // Dynamic Full-Page Theme & Text Shifts
     if (bpm < 55) {
-      // Purple Theme for Low BPM Alert
-      applyDynamicTheme("#140924", "rgba(36, 15, 65, 0.9)", "rgba(20, 7, 38, 0.8)", "#c084fc", "rgba(192, 132, 252, 0.4)", "#e9d5ff");
+      // Low BPM Alert (Purple)
+      applyDynamicTheme("#140924", "#1b0c30", "#0e061a", "#c084fc", "rgba(192, 132, 252, 0.45)", "#e9d5ff");
       moodEl.innerText = "Critically Low BPM (< 55)";
-      genreEl.innerText = "Medical Attention Recommended";
+      genreEl.innerText = "Seek Medical Attention";
     } else if (bpm >= 55 && bpm <= 66) {
-      // Calm Blue Theme
-      applyDynamicTheme("#051329", "rgba(10, 30, 60, 0.9)", "rgba(4, 18, 40, 0.8)", "#38bdf8", "rgba(56, 189, 248, 0.35)", "#93c5fd");
+      // Relaxed (Deep Ocean Blue)
+      applyDynamicTheme("#051329", "#081d3d", "#030e21", "#38bdf8", "rgba(56, 189, 248, 0.4)", "#93c5fd");
       moodEl.innerText = "Relaxed / Peaceful (55-66 BPM)";
     } else if (bpm >= 67 && bpm <= 82) {
-      // Balanced Green Theme
-      applyDynamicTheme("#031c14", "rgba(8, 48, 34, 0.9)", "rgba(3, 28, 19, 0.8)", "#22c55e", "rgba(34, 197, 94, 0.35)", "#86efac");
+      // Calm Baseline (Forest Green)
+      applyDynamicTheme("#031c14", "#062b1f", "#02120d", "#22c55e", "rgba(34, 197, 94, 0.4)", "#86efac");
       moodEl.innerText = "Calm Baseline / Normal Vibe";
     } else if (bpm >= 83 && bpm <= 170) {
-      // Energetic Red/Orange Theme
-      applyDynamicTheme("#240909", "rgba(60, 15, 15, 0.9)", "rgba(36, 7, 7, 0.8)", "#f97316", "rgba(249, 115, 22, 0.35)", "#fdba74");
+      // High Energy (Orange / Warm Amber)
+      applyDynamicTheme("#240909", "#360e0e", "#190505", "#f97316", "rgba(249, 115, 22, 0.45)", "#fdba74");
       moodEl.innerText = "High Energy / Excited / Stressed";
     } else if (bpm > 170 && bpm <= 200) {
-      // Deep Red Theme for High BPM Rest Warning
-      applyDynamicTheme("#330505", "rgba(75, 10, 10, 0.9)", "rgba(45, 5, 5, 0.8)", "#ef4444", "rgba(239, 68, 68, 0.4)", "#fca5a5");
+      // BPM High Caution (Deep Red)
+      applyDynamicTheme("#330505", "#4a0808", "#240303", "#ef4444", "rgba(239, 68, 68, 0.5)", "#fca5a5");
       moodEl.innerText = "BPM Too High (171-200 BPM)";
       genreEl.innerText = "Rest & Soothing Melody";
       return;
     } else {
-      // Extreme Crimson Theme for > 200 Emergency
-      applyDynamicTheme("#450000", "rgba(90, 0, 0, 0.95)", "rgba(55, 0, 0, 0.9)", "#dc2626", "rgba(220, 38, 38, 0.6)", "#fecaca");
+      // > 200 Critical Medical Emergency (Crimson Red)
+      applyDynamicTheme("#450000", "#5e0000", "#300000", "#dc2626", "rgba(220, 38, 38, 0.75)", "#fecaca");
       moodEl.innerText = "DANGER: BPM > 200";
-      genreEl.innerText = "Seek Medical Help Immediately";
+      genreEl.innerText = "Seek Medical Help!";
       return;
     }
 
