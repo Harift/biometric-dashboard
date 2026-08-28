@@ -274,11 +274,77 @@
       filter: brightness(1.2);
     }
 
-    .btn-submit:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
+    /* POPUP MODAL STYLES */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(3, 7, 18, 0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .modal-card {
+      background: var(--card-bg);
+      border: 1px solid var(--accent-color);
+      border-radius: 20px;
+      padding: 24px;
+      max-width: 450px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      animation: modalFadeIn 0.3s ease;
+    }
+
+    @keyframes modalFadeIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-quote {
+      font-style: italic;
+      font-size: 14px;
+      color: #f1f5f9;
+      line-height: 1.5;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 14px;
+      border-radius: 10px;
+      border-left: 4px solid var(--accent-color);
+    }
+
+    .btn-breakup-toggle {
+      background: rgba(236, 72, 153, 0.2);
+      border: 1px solid #ec4899;
+      color: #fbcfe8;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 8px 12px;
+    }
+
+    .btn-breakup-toggle:hover {
+      background: rgba(236, 72, 153, 0.4);
+    }
+
+    .btn-modal-proceed {
+      background: var(--accent-color);
+      color: #000;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn-modal-proceed:disabled {
       background: #475569;
-      color: #cbd5e1;
+      color: #94a3b8;
+      cursor: not-allowed;
     }
 
     /* MOBILE MEDIA QUERY */
@@ -382,11 +448,10 @@
         <select id="target-mode" onchange="updateAnalysis()">
           <option value="maintain">Maintain My Mood</option>
           <option value="change">Change My Mood</option>
-          <option value="breakup">Breakup Vibe</option>
         </select>
       </div>
 
-      <button id="rec-btn" class="btn-submit" onclick="handleRecommendationClick()">Open YouTube Music Recommendation →</button>
+      <button id="rec-btn" class="btn-submit" onclick="openQuoteModal()">Open YouTube Music Recommendation →</button>
     </div>
 
   </div>
@@ -399,13 +464,83 @@
 
 </div>
 
+<!-- POPUP MODAL -->
+<div class="modal-overlay" id="quote-modal">
+  <div class="modal-card">
+    <div style="font-size: 11px; color: var(--text-muted); font-weight: bold; letter-spacing: 1px;">AI NEURAL ADVICE</div>
+    <div class="modal-quote" id="modal-quote-text">Loading quote...</div>
+
+    <button class="btn-breakup-toggle" id="breakup-toggle-btn" style="display: none;" onclick="enableBreakupMode()">
+      💔 Feeling Heartbroken? Switch to Breakup Songs
+    </button>
+
+    <button class="btn-modal-proceed" id="modal-proceed-btn" disabled onclick="redirectToYouTube()">
+      Please wait (5s)...
+    </button>
+  </div>
+</div>
+
 <script>
+  // QUOTE POOLS (10 QUOTES EACH)
+  const quotesPool = {
+    calm: [
+      '"A tranquil mind brings inner strength and self-confidence."',
+      '"Peace comes from within. Do not seek it without."',
+      '"Quiet the mind, and the soul will speak."',
+      '"Calmness is the cradle of power."',
+      '"In the silence of the heart, wisdom awakens."',
+      '"Breathing in, I calm body and mind. Breathing out, I smile."',
+      '"Serenity is not freedom from the storm, but peace amid the storm."',
+      '"The mind should be like water—smooth, calm, and reflecting truth."',
+      '"Slow down and everything you are chasing will come around and catch you."',
+      '"A quiet pulse is a fortress against life\'s chaos."'
+    ],
+    highEnergy: [
+      '"Channel that fiery pulse into relentless momentum. Do not break—dominate!"',
+      '"Your energy defines your reality. Turn up the fire inside!"',
+      '"Action is the foundational key to all success. Keep moving!"',
+      '"Don\'t stop when you\'re tired. Stop when you\'re done."',
+      '"The only limits that exist are the ones you build in your mind."',
+      '"Turn your adrenaline into accomplishment."',
+      '"Strength does not come from winning. Your struggles develop your strengths."',
+      '"Push harder than yesterday if you want a better tomorrow."',
+      '"Your heartbeat is the drumline to your own success story."',
+      '"Seize the energy of this moment and conquer your goals."'
+    ],
+    extreme: [
+      '"Pause immediately. Even the strongest engines overheat when driven endlessly."',
+      '"Breathe deep. Stress is an illusion created by temporary overload."',
+      '"Step back before you step over the line. Regain control."',
+      '"In high-pressure moments, composure is your greatest weapon."',
+      '"When storm winds rage, the wise tree bends instead of breaking."',
+      '"Relax your shoulders, unclench your jaw. Control your pulse."',
+      '"A rapid mind makes reckless choices. Pause and reset."',
+      '"Take a step back. Chaos passes, but your wellness comes first."',
+      '"Your heart is sending a signal: slow down and recalculate."',
+      '"Mastering your breath is the first step to mastering your life."'
+    ],
+    breakup: [
+      '"You\'re crying over someone who replaced you like a software update? Hit the gym and delete their number."',
+      '"They lost someone who loved them; you lost someone who didn\'t value you. Who really lost?"',
+      '"Stop checking their social media. You\'re inspecting garbage you already threw out."',
+      '"Your heart rate spiked for someone who couldn\'t even reply to a text? Do better."',
+      '"A breakup is just the universe\'s way of un-installing toxic malware from your life."',
+      '"They aren\'t your soulmate, they were just a life lesson with good lighting."',
+      '"Upgrade your playlist, upgrade your life, and let them remain a past mistake."',
+      '"You missed them? Go do 20 pushups and drink water. You\'re just bored."',
+      '"Why cry over spilled milk when you can build an empire instead?"',
+      '"Love is grand, but self-respect is priceless. Wipe your eyes and level up."'
+    ]
+  };
+
   let isHardwareConnected = false;
   let espBpmValue = 0;
   let activeInputMode = "manual";
   let activeWaveColor = '#38bdf8';
-  let currentEmotion = "neutral";
-  let activeQuoteText = "";
+  let activeCategory = "calm";
+  let isBreakupOverride = false;
+  let currentSelectedQuote = "";
+  let modalTimer = null;
 
   // ECG Graph Logic
   const canvas = document.getElementById('ecgCanvas');
@@ -455,6 +590,11 @@
       return parseInt(document.getElementById('manual-bpm-field').value) || 0;
     }
     return espBpmValue;
+  }
+
+  function getRandomQuote(category) {
+    const pool = quotesPool[category] || quotesPool.calm;
+    return pool[Math.floor(Math.random() * pool.length)];
   }
 
   async function pollESP32BPM() {
@@ -517,7 +657,7 @@
     kCtx.stroke();
     kCtx.globalAlpha = 1.0;
 
-    // 2. Cyber Shoulders & Bust (Sleek Female Contour)
+    // 2. Cyber Shoulders & Bust
     const bodyGrad = kCtx.createLinearGradient(0, headY + 50, 0, h);
     bodyGrad.addColorStop(0, '#0f172a');
     bodyGrad.addColorStop(1, '#020617');
@@ -537,7 +677,7 @@
     kCtx.fill();
     kCtx.stroke();
 
-    // Chest Biometric Heartbeat Core
+    // Chest Biometric Core
     kCtx.save();
     kCtx.shadowColor = activeWaveColor;
     kCtx.shadowBlur = 15;
@@ -578,7 +718,7 @@
     kCtx.fill();
     kCtx.stroke();
 
-    // Head Visor / Biometric Scanner Band
+    // Head Visor
     kCtx.save();
     kCtx.shadowColor = activeWaveColor;
     kCtx.shadowBlur = 20;
@@ -593,7 +733,7 @@
     kCtx.fill();
     kCtx.restore();
 
-    // Cyber Eye Glint
+    // Eye Glint
     kCtx.fillStyle = '#ffffff';
     kCtx.beginPath();
     kCtx.arc(headX - 18 + (pulse * 0.5), headY - 2, 3, 0, Math.PI * 2);
@@ -608,18 +748,16 @@
     kCtx.lineTo(headX + 8, headY + 35);
     kCtx.stroke();
 
-    // 5. Crown Hair Geometry / Cyber Antennas
+    // 5. Crown Hair Geometry
     kCtx.strokeStyle = activeWaveColor;
     kCtx.lineWidth = 2;
     
-    // Left Crest
     kCtx.beginPath();
     kCtx.moveTo(headX - 30, headY - 60);
     kCtx.lineTo(headX - 60, headY - 90);
     kCtx.lineTo(headX - 40, headY - 30);
     kCtx.stroke();
 
-    // Right Crest
     kCtx.beginPath();
     kCtx.moveTo(headX + 30, headY - 60);
     kCtx.lineTo(headX + 60, headY - 90);
@@ -641,8 +779,7 @@
     activeWaveColor = accentColor;
   }
 
-  function setKurisuDialogue(emotion, text) {
-    currentEmotion = emotion;
+  function setKurisuDialogue(text) {
     document.getElementById('kurisu-dialog').innerText = text;
   }
 
@@ -655,58 +792,49 @@
     const genreEl = document.getElementById('suggested-genre');
     const quoteEl = document.getElementById('dynamic-quote');
 
+    isBreakupOverride = false; // Reset override on fresh updates
+
     if (!bpm || bpm <= 0) {
       applyDynamicTheme("#030712", "#090d16", "#030712", "#38bdf8", "rgba(56, 189, 248, 0.15)", "#64748b");
-      setKurisuDialogue("neutral", '"Awaiting biometric stream synchronization..."');
+      setKurisuDialogue('"Awaiting biometric stream synchronization..."');
       moodEl.innerText = "Waiting for Data...";
       genreEl.innerText = "Waiting for Selection...";
       quoteEl.innerText = '"Awaiting biometric stream to generate neural advice..."';
       return;
     }
 
-    // SPECIAL BREAKUP MODE
-    if (targetMode === "breakup") {
-      applyDynamicTheme("#2a0a18", "#3b1123", "#1f0611", "#ec4899", "rgba(236, 72, 153, 0.45)", "#fbcfe8");
-      setKurisuDialogue("tsundere", '"Oh, heartbroken are we? Crying over an ex won\'t fix your pulse!"');
-      moodEl.innerText = "Heartbroken / Processing Pain";
-      genreEl.innerText = `${lang} Deep Heartbreak Melodies`;
-      activeQuoteText = '"You\'re crying over someone who replaced you like a software update? Hit the gym, fix your life, and delete their number."';
-      quoteEl.innerText = activeQuoteText;
-      return;
-    }
-
-    // REGULAR BPM MODES
     if (bpm < 55) {
       applyDynamicTheme("#140924", "#1b0c30", "#0e061a", "#c084fc", "rgba(192, 132, 252, 0.45)", "#e9d5ff");
-      setKurisuDialogue("concerned", '"Low pulse anomaly detected. Recommending ambient recovery audio."');
+      setKurisuDialogue('"Low pulse anomaly detected. Recommending ambient recovery audio."');
       moodEl.innerText = "Critically Low BPM (< 55)";
       genreEl.innerText = "Rest & Ambient Sounds";
-      activeQuoteText = '"Peace comes from within. Slow down, breathe, and let the storm pass around you."';
+      activeCategory = "calm";
     } else if (bpm >= 55 && bpm <= 82) {
       applyDynamicTheme("#031c14", "#062b1f", "#02120d", "#22c55e", "rgba(34, 197, 94, 0.4)", "#86efac");
-      setKurisuDialogue("calm", '"Optimal biometric rhythm achieved. Core state stabilized."');
+      setKurisuDialogue('"Optimal biometric rhythm achieved. Core state stabilized."');
       moodEl.innerText = "Calm Baseline / Peaceful Vibe";
-      activeQuoteText = '"A tranquil mind brings inner strength and self-confidence."';
+      activeCategory = "calm";
     } else if (bpm >= 83 && bpm <= 170) {
       applyDynamicTheme("#240909", "#360e0e", "#190505", "#f97316", "rgba(249, 115, 22, 0.45)", "#fdba74");
-      setKurisuDialogue("tsundere", '"Elevated heart rate registered! Adjusting frequency output."');
+      setKurisuDialogue('"Elevated heart rate registered! Adjusting frequency output."');
       moodEl.innerText = "High Energy / Excited / Stressed";
-      activeQuoteText = '"Channel that fiery pulse into relentless momentum. Do not break—dominate!"';
+      activeCategory = "highEnergy";
     } else {
       applyDynamicTheme("#330505", "#4a0808", "#240303", "#ef4444", "rgba(239, 68, 68, 0.5)", "#fca5a5");
-      setKurisuDialogue("concerned", '"Warning: Extreme BPM overload! Initiate immediate relaxation sequence."');
+      setKurisuDialogue('"Warning: Extreme BPM overload! Initiate immediate relaxation sequence."');
       moodEl.innerText = "BPM Too High (> 170 BPM)";
       genreEl.innerText = "Rest & Medical Caution";
-      activeQuoteText = '"Pause immediately. Even the strongest engines overheat when driven endlessly."';
+      activeCategory = "extreme";
     }
 
-    quoteEl.innerText = activeQuoteText;
+    currentSelectedQuote = getRandomQuote(activeCategory);
+    quoteEl.innerText = currentSelectedQuote;
 
     let genreText = "";
     if (targetMode === "maintain") {
       if (bpm >= 55 && bpm <= 82) genreText = `${lang} Chill & Soft Hits`;
       else genreText = `${lang} Motivational Workout Tracks`;
-    } else if (targetMode === "change") {
+    } else {
       if (bpm >= 55 && bpm <= 82) genreText = `${lang} Energetic Workout Tracks`;
       else genreText = `${lang} Deep Relaxation Melodies`;
     }
@@ -714,14 +842,59 @@
     genreEl.innerText = genreText;
   }
 
-  function handleRecommendationClick() {
-    const btn = document.getElementById('rec-btn');
+  // MODAL AND BREAKUP HANDLERS
+  function openQuoteModal() {
+    const modal = document.getElementById('quote-modal');
+    const quoteText = document.getElementById('modal-quote-text');
+    const breakupBtn = document.getElementById('breakup-toggle-btn');
+    const proceedBtn = document.getElementById('modal-proceed-btn');
+
+    quoteText.innerText = currentSelectedQuote;
+    modal.style.display = 'flex';
+
+    // Show Breakup option if in Calm mode
+    if (activeCategory === "calm") {
+      breakupBtn.style.display = 'inline-block';
+    } else {
+      breakupBtn.style.display = 'none';
+    }
+
+    // Start 5-second countdown
+    proceedBtn.disabled = true;
+    let timeLeft = 5;
+
+    if (modalTimer) clearInterval(modalTimer);
+
+    modalTimer = setInterval(() => {
+      if (timeLeft > 0) {
+        proceedBtn.innerText = `Preparing Youtube Stream (${timeLeft}s)...`;
+        timeLeft--;
+      } else {
+        clearInterval(modalTimer);
+        proceedBtn.innerText = "Launch YouTube Music Recommendation →";
+        proceedBtn.disabled = false;
+      }
+    }, 1000);
+  }
+
+  function enableBreakupMode() {
+    isBreakupOverride = true;
+    activeCategory = "breakup";
+    currentSelectedQuote = getRandomQuote("breakup");
+
+    document.getElementById('modal-quote-text').innerText = currentSelectedQuote;
+    document.getElementById('breakup-toggle-btn').style.display = 'none';
+    setKurisuDialogue('"Switched to Heartbreak mode. Time for some harsh truth..."');
+  }
+
+  function redirectToYouTube() {
     const lang = document.getElementById('lang-select').value;
     const targetMode = document.getElementById('target-mode').value;
     const bpm = getActiveBPM();
 
     let query = `${lang} mood relaxation music`;
-    if (targetMode === "breakup") {
+
+    if (isBreakupOverride) {
       query = `${lang} breakup emotional sad songs heartbreak music`;
     } else if (targetMode === "maintain") {
       if (bpm >= 55 && bpm <= 82) query = `${lang} chill relaxing love romantic songs`;
@@ -731,20 +904,8 @@
       else query = `${lang} deep relaxation calm soothing melodies`;
     }
 
-    btn.disabled = true;
-    let timeLeft = 5;
-
-    const timer = setInterval(() => {
-      if (timeLeft > 0) {
-        btn.innerText = `Quote: ${activeQuoteText} (Opening in ${timeLeft}s...)`;
-        timeLeft--;
-      } else {
-        clearInterval(timer);
-        btn.innerText = "Open YouTube Music Recommendation →";
-        btn.disabled = false;
-        window.open(`https://music.youtube.com/search?q=${encodeURIComponent(query)}`, '_blank');
-      }
-    }, 1000);
+    document.getElementById('quote-modal').style.display = 'none';
+    window.open(`https://music.youtube.com/search?q=${encodeURIComponent(query)}`, '_blank');
   }
 
   window.addEventListener('DOMContentLoaded', () => {
